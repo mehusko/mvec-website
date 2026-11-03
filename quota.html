@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Apply for expat quota | MVEC</title>
+  <meta name="description" content="Apply for expat quota online. Send MVEC your company details and documents and we handle the submission on Xpat.">
+  <link rel="canonical" href="https://www.mvec.mv/quota">
+  <meta property="og:title" content="Apply for expat quota | MVEC">
+  <meta property="og:description" content="Apply for expat quota online. Send MVEC your company details and documents and we handle the submission on Xpat.">
+  <meta name="theme-color" content="#0f2138">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="/" class="brand" aria-label="MVEC home">
+        <span class="brand-mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></span>
+        <span class="brand-text">mvec</span>
+      </a>
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
+      <nav class="nav-links">
+        <a href="/#services">Services</a>
+        <a href="/quota">Apply for quota</a>
+        <a href="/workers">Browse workers</a>
+        <a href="/jobs">Find a job</a>
+        <a href="/#about">About</a>
+        <a href="/#contact">Contact</a>
+        <a href="/#contact" class="btn btn-small">Hire help</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <p class="eyebrow">For employers</p>
+        <h1>Apply for expat quota</h1>
+        <p class="lead">Send us your company details and documents here. We check everything, submit your quota application on Xpat, and keep you updated until it's approved.</p>
+        <ol class="mini-steps">
+          <li><span>1</span>Fill in your company details</li>
+          <li><span>2</span>Upload the documents you have</li>
+          <li><span>3</span>We review and call you within 1 working day</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container contact-grid">
+        <div>
+          <form class="contact-form" id="quota-form" novalidate>
+            <h2 class="form-h">Company details</h2>
+            <div class="form-row">
+              <label>Company name *<input name="company" required maxlength="160"></label>
+              <label>Business registration no.<input name="regno" maxlength="60" placeholder="e.g. C-1234/2020"></label>
+            </div>
+            <div class="form-row">
+              <label>Sector
+                <select name="sector">
+                  <option value="">Select</option><option>Resort / hotel / guesthouse</option><option>Construction</option>
+                  <option>Retail / shop</option><option>Restaurant / cafe</option><option>Office / services</option>
+                  <option>Fisheries / agriculture</option><option>Domestic</option><option>Other</option>
+                </select>
+              </label>
+              <label>Island / work site<input name="island" maxlength="120" placeholder="e.g. Male, Hulhumale, K. Maafushi"></label>
+            </div>
+            <div class="form-row">
+              <label>Contact person *<input name="contact" required maxlength="120"></label>
+              <label>Position<input name="position" maxlength="80" placeholder="e.g. Owner, HR Manager"></label>
+            </div>
+            <div class="form-row">
+              <label>Phone *<input name="phone" type="tel" required maxlength="40" placeholder="+960 XXX XXXX"></label>
+              <label>Email *<input name="email" type="email" required maxlength="160"></label>
+            </div>
+
+            <h2 class="form-h">Quota needed</h2>
+            <div class="form-row">
+              <label>Number of workers *<input name="workers" type="number" min="1" max="999" required></label>
+              <label>What do you need?
+                <select name="service">
+                  <option>New quota</option><option>Additional quota</option><option>Quota and work permits</option><option>Not sure, please advise</option>
+                </select>
+              </label>
+            </div>
+            <label>Job roles *<input name="roles" required maxlength="500" placeholder="e.g. 2 x Cook, 3 x Room attendant"></label>
+            <label>Preferred nationality<input name="nationality" maxlength="120" placeholder="Optional"></label>
+
+            <h2 class="form-h">Documents</h2>
+            <p class="form-hint">Upload what you have now (PDF, photo or Word, up to 3 MB each). Anything missing can be sent later on WhatsApp.</p>
+            <label class="doc-slot">Business registration certificate
+              <input type="file" name="doc_reg" data-label="Business registration certificate" accept=".pdf,.doc,.docx,image/*,application/pdf">
+            </label>
+            <label class="doc-slot">Site registration or lease agreement
+              <input type="file" name="doc_site" data-label="Site registration or lease agreement" accept=".pdf,.doc,.docx,image/*,application/pdf">
+            </label>
+            <label class="doc-slot">ID card of owner or authorised person
+              <input type="file" name="doc_id" data-label="ID card of owner or authorised person" accept=".pdf,.doc,.docx,image/*,application/pdf">
+            </label>
+            <label class="doc-slot">Site photos <small>(you can choose several)</small>
+              <input type="file" name="doc_photos" data-label="Site photos" accept=".pdf,.doc,.docx,image/*,application/pdf" multiple>
+            </label>
+            <label class="doc-slot">Other documents <small>(you can choose several)</small>
+              <input type="file" name="doc_other" data-label="Other documents" accept=".pdf,.doc,.docx,image/*,application/pdf" multiple>
+            </label>
+
+            <label>Notes<textarea name="message" rows="3" maxlength="2000" placeholder="Anything else we should know"></textarea></label>
+            <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <label class="consent"><input type="checkbox" name="consent" required> I confirm these documents are correct and agree that MVEC may use them to process my quota application. *</label>
+            <button class="btn" type="submit">Submit quota application</button>
+            <div class="progress" hidden><div class="bar"></div></div>
+            <p class="form-status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+        <aside class="talk-card">
+          <h3>Need help?</h3>
+          <p>Not sure which documents you need, or have them on paper? Message us and we'll guide you.</p>
+          <a class="btn btn-block" href="https://wa.me/9607637762?text=Hi%20MVEC%2C%20I%20want%20to%20apply%20for%20quota." target="_blank" rel="noopener">Chat on WhatsApp</a>
+          <ul class="tips">
+            <li>Your documents go straight to our team. They are not shown on the website.</li>
+            <li>You'll get a reference number to quote when you contact us.</li>
+            <li>We'll confirm the full document list for your case before submitting on Xpat.</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+  (function () {
+    var form = document.getElementById('quota-form');
+    var status = form.querySelector('.form-status');
+    var btn = form.querySelector('button[type=submit]');
+    var prog = form.querySelector('.progress'), bar = prog.querySelector('.bar');
+    var MAX = 3 * 1024 * 1024;
+
+    function toBase64(blob) {
+      return new Promise(function (ok, fail) { var r = new FileReader(); r.onload = function () { ok(String(r.result).split(',')[1]); }; r.onerror = fail; r.readAsDataURL(blob); });
+    }
+    // Shrink large phone photos so they fit the 3 MB limit.
+    function shrink(file) {
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size <= MAX * 0.8) return Promise.resolve(file);
+      return new Promise(function (ok) {
+        var img = new Image(), url = URL.createObjectURL(file);
+        img.onload = function () {
+          var s = Math.min(1, 2200 / Math.max(img.width, img.height));
+          var c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+          c.toBlob(function (b) { ok(b ? new File([b], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }) : file); }, 'image/jpeg', 0.82);
+        };
+        img.onerror = function () { ok(file); };
+        img.src = url;
+      });
+    }
+    async function post(data) {
+      var res = await fetch('/api/quota', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      var out = {}; try { out = await res.json(); } catch (_) {}
+      if (!res.ok) throw new Error(out.error || 'Something went wrong.');
+      return out;
+    }
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      status.className = 'form-status'; status.textContent = '';
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+
+      var files = [];
+      form.querySelectorAll('input[type=file]').forEach(function (inp) {
+        Array.prototype.forEach.call(inp.files, function (f, i) {
+          files.push({ file: f, label: inp.dataset.label + (inp.files.length > 1 ? ' ' + (i + 1) : '') });
+        });
+      });
+
+      btn.disabled = true; btn.textContent = 'Preparing…';
+      try {
+        for (var i = 0; i < files.length; i++) {
+          files[i].file = await shrink(files[i].file);
+          if (files[i].file.size > MAX) throw new Error('"' + files[i].file.name + '" is larger than 3 MB. Please choose a smaller file, or send it on WhatsApp.');
+        }
+        var data = { action: 'start', files: files.length };
+        new FormData(form).forEach(function (v, k) { if (!(v instanceof File)) data[k] = v; });
+        btn.textContent = 'Sending details…';
+        var out = await post(data);
+        var failed = [];
+        if (files.length) { prog.hidden = false; bar.style.width = '0%'; }
+        for (var j = 0; j < files.length; j++) {
+          btn.textContent = 'Uploading ' + (j + 1) + ' of ' + files.length + '…';
+          try {
+            await post({ action: 'file', ref: out.ref, label: files[j].label, file: { name: files[j].file.name, type: files[j].file.type, data: await toBase64(files[j].file) } });
+          } catch (err) { failed.push(files[j].label + ' (' + err.message + ')'); }
+          bar.style.width = Math.round((j + 1) / files.length * 100) + '%';
+        }
+        form.reset();
+        if (failed.length) {
+          status.innerHTML = 'Your application was received (reference <strong>' + out.ref + '</strong>), but these files did not upload: ' + failed.join(', ') + '. Please send them on WhatsApp with your reference.';
+          status.classList.add('err');
+        } else {
+          status.innerHTML = 'Thank you! Your quota application has been sent. Your reference is <strong>' + out.ref + '</strong>. We\'ll call you within 1 working day.';
+          status.classList.add('ok');
+        }
+      } catch (err) {
+        status.textContent = err.message + ' You can also WhatsApp us on +960 763 7762.';
+        status.classList.add('err');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Submit quota application';
+        setTimeout(function () { prog.hidden = true; }, 1500);
+      }
+    });
+  })();
+  </script>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© <span id="year"></span> MVEC, Maldives Employment Consultant. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/site.js" defer></script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

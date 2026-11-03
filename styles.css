@@ -162,3 +162,21 @@ section[id] { scroll-margin-top: 72px; }
   .nav-links { display: none; position: absolute; top: 72px; left: 0; right: 0; background: var(--navy); flex-direction: column; padding: 16px; gap: 1em; }
   .nav-links.open { display: flex; }
 }
+
+/* Quota page */
+.mini-steps { list-style: none; padding: 0; margin: 1.6em 0 0; display: flex; flex-wrap: wrap; gap: 12px 28px; }
+.mini-steps li { display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--navy); }
+.mini-steps span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--teal); color: var(--white); font-weight: 700; font-size: .9rem; }
+.form-h { font-size: 1.25rem; margin: .8em 0 0; }
+.form-h:first-child { margin-top: 0; }
+.doc-slot { background: var(--sand); border-radius: 8px; padding: 12px 14px; }
+.doc-slot small { font-weight: 400; color: var(--muted); }
+.doc-slot input[type=file] { background: var(--white); }
+.consent { display: flex !important; grid-template-columns: none; gap: 10px !important; align-items: flex-start; font-weight: 400 !important; font-size: .92rem !important; color: var(--muted); }
+.consent input { margin-top: 4px; width: 18px; height: 18px; flex: none; accent-color: var(--navy); }
+.progress { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.progress .bar { height: 100%; width: 0; background: var(--teal); transition: width .3s; }
+.card-link { display: inline-block; margin-top: .8em; font-weight: 600; text-decoration: none; }
+.contact-grid > *, .form-row > * { min-width: 0; }
+.contact-form input, .contact-form select, .contact-form textarea { width: 100%; max-width: 100%; }
+.consent input { width: 18px; }
