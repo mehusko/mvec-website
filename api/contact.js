@@ -1,18 +1,18 @@
 // Sends website inquiries to the MVEC Telegram group.
 // Needs the Vercel environment variable TELEGRAM_BOT_TOKEN. TELEGRAM_CHAT_ID is optional:
-// if it's missing, the most recent group the bot has seen a message in is used.
+// if it's missing, the most recent group (or else private chat) the bot has seen is used.
 
 const clip = (v, n) => String(v ?? '').trim().slice(0, n);
 async function findGroupChatId(token) {
   const r = await fetch(`https://api.telegram.org/bot${token}/getUpdates?allowed_updates=["message","my_chat_member"]`);
   if (!r.ok) return null;
   const data = await r.json();
-  const chats = (data.result || [])
-    .map((u) => (u.message || u.my_chat_member || {}).chat)
-    .filter((c) => c && (c.type === 'group' || c.type === 'supergroup'));
-  if (!chats.length) return null;
-  const chat = chats[chats.length - 1];
-  console.log(`Contact form: using Telegram group "${chat.title}" (${chat.id}). Set TELEGRAM_CHAT_ID to pin it.`);
+  const all = (data.result || []).map((u) => (u.message || u.my_chat_member || {}).chat).filter(Boolean);
+  const groups = all.filter((c) => c.type === 'group' || c.type === 'supergroup');
+  // Prefer a group; otherwise fall back to a private chat with the bot.
+  const chat = groups[groups.length - 1] || all[all.length - 1];
+  if (!chat) return null;
+  console.log(`Contact form: using Telegram ${chat.type} chat "${chat.title || chat.first_name || ''}" (${chat.id}). Set TELEGRAM_CHAT_ID to pin it.`);
   return chat.id;
 }
 
@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     try { chatId = await findGroupChatId(token); } catch (e) { console.error('getUpdates failed', e); }
   }
   if (!chatId) {
-    console.error('Contact form: no Telegram group found. Add the bot to the group and send a message there.');
+    console.error('Contact form: no Telegram chat found. Send the bot /start (in a group or privately).');
     return res.status(500).json({ error: 'Form is not configured yet.' });
   }
 
