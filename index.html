@@ -5,27 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>MVEC | Maldives Employment Consultant</title>
   <meta name="description" content="MVEC helps Maldivian employers hire foreign workers: expat quota, work permits, work visas, renewals and recruitment, handled end to end through Xpat.">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="canonical" href="https://www.mvec.mv/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="MVEC | Maldives Employment Consultant">
+  <meta property="og:description" content="Expat quota, work permits, work visas, renewals and recruitment for Maldivian employers.">
+  <meta property="og:url" content="https://www.mvec.mv/">
+  <meta name="theme-color" content="#0f2138">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"EmploymentAgency","name":"MVEC - Maldives Employment Consultant","url":"https://www.mvec.mv/","telephone":"+960 763 7762","email":"info@mvec.mv",
+   "address":{"@type":"PostalAddress","streetAddress":"Majeedhee Magu","addressLocality":"Male","addressCountry":"MV"},
+   "openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Sunday","Monday","Tuesday","Wednesday","Thursday"],"opens":"09:00","closes":"17:00"}],
+   "areaServed":"Maldives"}
+  </script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <header class="site-header">
     <div class="container nav">
-      <a href="#top" class="brand" aria-label="MVEC home">
+      <a href="/" class="brand" aria-label="MVEC home">
         <span class="brand-mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></span>
         <span class="brand-text">mvec</span>
       </a>
       <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
       <nav class="nav-links">
-        <a href="#services">Services</a>
-        <a href="#process">How it works</a>
-        <a href="#about">About</a>
-        <a href="#faq">FAQ</a>
-        <a href="#contact">Contact</a>
-        <a href="#contact" class="btn btn-small">Hire help</a>
+        <a href="/#services">Services</a>
+        <a href="/workers">Browse workers</a>
+        <a href="/jobs">Find a job</a>
+        <a href="/#checklists">Documents</a>
+        <a href="/#about">About</a>
+        <a href="/#contact">Contact</a>
+        <a href="/#contact" class="btn btn-small">Hire help</a>
       </nav>
     </div>
   </header>
@@ -84,7 +97,34 @@
       </div>
     </section>
 
-    <section id="about" class="section">
+    <section id="checklists" class="section">
+      <div class="container">
+        <h2>Documents you'll need</h2>
+        <p class="section-lead">A general guide so you can get things ready. Requirements can change, so we confirm the exact list for your case before anything is submitted.</p>
+        <div class="checklists">
+          <details open><summary>Expat quota</summary><ul>
+            <li>Business registration certificate</li><li>Business site registration on Xpat</li>
+            <li>Site photos and declarations</li><li>Number of employees and job roles needed</li>
+            <li>Employer's ID card or authorised person's details</li></ul></details>
+          <details><summary>New work permit</summary><ul>
+            <li>Approved quota slot</li><li>Employee's passport copy (valid at least 6 months)</li>
+            <li>Passport size photo</li><li>Educational and work experience certificates</li>
+            <li>Signed employment agreement</li><li>Police clearance (for some roles)</li></ul></details>
+          <details><summary>Work visa &amp; entry</summary><ul>
+            <li>Issued work permit</li><li>Flight details</li><li>Medical checkup after arrival</li>
+            <li>Health insurance for the employee</li><li>Accommodation details</li></ul></details>
+          <details><summary>Renewal</summary><ul>
+            <li>Current work permit and visa details</li><li>Valid passport copy</li>
+            <li>Up to date medical and insurance</li><li>Paid permit fees and no outstanding fines</li></ul></details>
+          <details><summary>Transfer or cancellation</summary><ul>
+            <li>Current and new employer details</li><li>Release letter from the current employer</li>
+            <li>Passport and work permit copy</li><li>Return ticket details (for cancellations)</li></ul></details>
+        </div>
+        <p class="checklist-cta">Not sure what applies to you? <a href="https://wa.me/9607637762" target="_blank" rel="noopener">Send us a WhatsApp</a> and we'll tell you.</p>
+      </div>
+    </section>
+
+    <section id="about" class="section alt">
       <div class="container about-grid">
         <div>
           <h2>About MVEC</h2>
@@ -99,7 +139,7 @@
       </div>
     </section>
 
-    <section id="faq" class="section alt">
+    <section id="faq" class="section">
       <div class="container narrow">
         <h2>Frequently asked questions</h2>
         <details><summary>How long does a work permit take?</summary><p>It depends on quota availability and how complete the documents are. We give you a realistic estimate once we see your case.</p></details>
@@ -114,7 +154,7 @@
         <div>
           <h2>Contact us</h2>
           <p class="section-lead">Fill in the form and we'll get back to you within 24 hours.</p>
-          <form class="contact-form" id="contact-form" novalidate>
+          <form class="contact-form" id="contact-form" data-endpoint="/api/contact" novalidate>
           <div class="form-row">
             <label>Full name *<input name="name" placeholder="Your full name" required maxlength="120"></label>
             <label>Email address *<input name="email" type="email" placeholder="you@example.com" required maxlength="160"></label>
@@ -162,6 +202,8 @@
             <li><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><span>Office</span><strong>Majeedhee Magu, Male<br>Republic of Maldives</strong></div></li>
             <li><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div><span>Hours</span><strong>Sunday – Thursday<br>9:00 AM – 5:00 PM</strong></div></li>
           </ul>
+          <iframe class="map" title="MVEC office on Majeedhee Magu, Male" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            src="https://www.google.com/maps?q=Majeedhee+Magu,+Male,+Maldives&amp;output=embed"></iframe>
         </aside>
       </div>
     </section>
@@ -173,40 +215,7 @@
     </div>
   </footer>
 
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-    const t = document.querySelector('.nav-toggle'), l = document.querySelector('.nav-links');
-    t.addEventListener('click', () => { const o = l.classList.toggle('open'); t.setAttribute('aria-expanded', o); });
-    l.querySelectorAll('a').forEach(a => a.addEventListener('click', () => l.classList.remove('open')));
-
-    const form = document.getElementById('contact-form');
-    const status = form.querySelector('.form-status');
-    const btn = form.querySelector('button[type=submit]');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      status.className = 'form-status';
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-      }
-      btn.disabled = true; btn.textContent = 'Sending…';
-      try {
-        const res = await fetch('/api/contact', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(Object.fromEntries(new FormData(form)))
-        });
-        if (!res.ok) throw new Error();
-        form.reset();
-        status.textContent = "Thank you! Your inquiry has been sent. We'll get back to you within 24 hours.";
-        status.classList.add('ok');
-      } catch {
-        status.textContent = 'Sorry, something went wrong. Please call or WhatsApp us on +960 763 7762.';
-        status.classList.add('err');
-      } finally {
-        btn.disabled = false; btn.textContent = 'Send inquiry';
-      }
-    });
-  </script>
+  <script src="/assets/site.js" defer></script>
+  <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

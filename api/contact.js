@@ -1,88 +1,51 @@
-// Sends website inquiries to the MVEC Telegram group.
-// Needs the Vercel environment variable TELEGRAM_BOT_TOKEN. TELEGRAM_CHAT_ID is optional:
-// if it's missing, the most recent group (or else private chat) the bot has seen is used.
-
-const clip = (v, n) => String(v ?? '').trim().slice(0, n);
-async function findGroupChatId(token) {
-  const r = await fetch(`https://api.telegram.org/bot${token}/getUpdates?allowed_updates=["message","my_chat_member"]`);
-  if (!r.ok) return null;
-  const data = await r.json();
-  const all = (data.result || []).map((u) => (u.message || u.my_chat_member || {}).chat).filter(Boolean);
-  const groups = all.filter((c) => c.type === 'group' || c.type === 'supergroup');
-  // Prefer a group; otherwise fall back to a private chat with the bot.
-  const chat = groups[groups.length - 1] || all[all.length - 1];
-  if (!chat) return null;
-  console.log(`Contact form: using Telegram ${chat.type} chat "${chat.title || chat.first_name || ''}" (${chat.id}). Set TELEGRAM_CHAT_ID to pin it.`);
-  return chat.id;
-}
-
-const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Website inquiries (contact form and worker requests) go to the MVEC Telegram chat.
+import { clip, esc, isEmail, readBody, sendMessage } from '../lib/telegram.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  const body = readBody(req);
+  if (clip(body.website, 200)) return res.status(200).json({ ok: true }); // honeypot
 
-  let body = req.body;
-  if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch { body = {}; }
-  }
-  body = body || {};
-
-  // Honeypot: bots fill the hidden "website" field.
-  if (clip(body.website, 200)) return res.status(200).json({ ok: true });
-
-  const name = clip(body.name, 120);
-  const email = clip(body.email, 160);
-  const phone = clip(body.phone, 40);
-  const service = clip(body.service, 80);
-  const source = clip(body.source, 80);
-  const message = clip(body.message, 3000);
-
-  if (!name || !email || !phone || !service || !message || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  const f = {
+    name: clip(body.name, 120),
+    company: clip(body.company, 160),
+    email: clip(body.email, 160),
+    phone: clip(body.phone, 40),
+    service: clip(body.service, 80),
+    source: clip(body.source, 80),
+    worker: clip(body.worker, 200),
+    count: clip(body.count, 20),
+    message: clip(body.message, 3000),
+  };
+  const isWorkerRequest = !!f.worker;
+  if (!f.name || !f.email || !f.phone || !isEmail(f.email) || (!isWorkerRequest && (!f.service || !f.message))) {
     return res.status(400).json({ error: 'Please fill in all required fields.' });
   }
 
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) {
-    console.error('Contact form: TELEGRAM_BOT_TOKEN is not set');
-    return res.status(500).json({ error: 'Form is not configured yet.' });
-  }
-  let chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!chatId) {
-    try { chatId = await findGroupChatId(token); } catch (e) { console.error('getUpdates failed', e); }
-  }
-  if (!chatId) {
-    console.error('Contact form: no Telegram chat found. Send the bot /start (in a group or privately).');
-    return res.status(500).json({ error: 'Form is not configured yet.' });
-  }
-
+  const line = (label, v) => (v ? `<b>${label}:</b> ${esc(v)}` : null);
   const text = [
-    '<b>New website inquiry</b>',
+    isWorkerRequest ? '<b>👷 New worker request</b>' : '<b>📩 New website inquiry</b>',
     '',
-    `<b>Name:</b> ${esc(name)}`,
-    `<b>Email:</b> ${esc(email)}`,
-    `<b>Phone:</b> ${esc(phone)}`,
-    `<b>Service:</b> ${esc(service)}`,
-    source ? `<b>Heard via:</b> ${esc(source)}` : null,
-    '',
-    esc(message),
+    line('Name', f.name),
+    line('Company', f.company),
+    line('Email', f.email),
+    line('Phone', f.phone),
+    line('Worker', f.worker),
+    line('How many', f.count),
+    line('Service', f.service),
+    line('Heard via', f.source),
+    f.message ? '' : null,
+    f.message ? esc(f.message) : null,
   ].filter((l) => l !== null).join('\n');
 
   try {
-    const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true }),
-    });
-    if (!r.ok) {
-      console.error('Telegram error', r.status, await r.text());
-      return res.status(502).json({ error: 'Could not send message.' });
-    }
+    await sendMessage(text);
     return res.status(200).json({ ok: true });
   } catch (err) {
-    console.error('Telegram request failed', err);
+    console.error('Contact form:', err.message);
     return res.status(502).json({ error: 'Could not send message.' });
   }
 }

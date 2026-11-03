@@ -1,0 +1,15 @@
+{
+  "sample": true,
+  "note": "Example profiles. Replace with real available workers and set sample to false.",
+  "workers": [
+    { "id": "W001", "role": "Commis chef", "sector": "Hospitality", "nationality": "Indian", "experience": "4 years", "available": "Within 1 month", "languages": "English, Hindi" },
+    { "id": "W002", "role": "Housekeeping attendant", "sector": "Hospitality", "nationality": "Sri Lankan", "experience": "3 years", "available": "Immediately", "languages": "English, Sinhala" },
+    { "id": "W003", "role": "Waiter / waitress", "sector": "Hospitality", "nationality": "Nepali", "experience": "2 years", "available": "Within 1 month", "languages": "English, Nepali" },
+    { "id": "W004", "role": "Mason", "sector": "Construction", "nationality": "Bangladeshi", "experience": "6 years", "available": "Immediately", "languages": "Bengali" },
+    { "id": "W005", "role": "Electrician", "sector": "Construction", "nationality": "Bangladeshi", "experience": "5 years", "available": "Within 2 weeks", "languages": "Bengali, basic English" },
+    { "id": "W006", "role": "Carpenter", "sector": "Construction", "nationality": "Indian", "experience": "8 years", "available": "Within 1 month", "languages": "Hindi, Tamil" },
+    { "id": "W007", "role": "Sales assistant", "sector": "Retail & office", "nationality": "Filipino", "experience": "3 years", "available": "Immediately", "languages": "English, Tagalog" },
+    { "id": "W008", "role": "Accountant", "sector": "Retail & office", "nationality": "Indian", "experience": "5 years", "available": "Within 1 month", "languages": "English, Malayalam" },
+    { "id": "W009", "role": "Housemaid", "sector": "Domestic", "nationality": "Sri Lankan", "experience": "4 years", "available": "Within 2 weeks", "languages": "Sinhala, basic English" }
+  ]
+}
