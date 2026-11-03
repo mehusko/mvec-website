@@ -71,13 +71,18 @@
               <label>Position<input name="position" maxlength="80" placeholder="e.g. Owner, HR Manager"></label>
             </div>
             <div class="form-row">
-              <label>Phone (WhatsApp) *
+              <label>Phone *
                 <span class="otp-row"><input name="phone" id="phone" type="tel" required maxlength="40" placeholder="+960 XXX XXXX"><button type="button" class="btn btn-small otp-send" id="otp-send" hidden>Send code</button></span>
               </label>
               <label>Email *<input name="email" type="email" required maxlength="160"></label>
             </div>
+            <div class="otp-channels" id="otp-channels" hidden>
+              <span>Send my code by:</span>
+              <label class="radio" data-ch="whatsapp" hidden><input type="radio" name="otpChannel" value="whatsapp"> WhatsApp</label>
+              <label class="radio" data-ch="viber" hidden><input type="radio" name="otpChannel" value="viber"> Viber</label>
+            </div>
             <div class="otp-box" id="otp-box" hidden>
-              <label>Enter the 6-digit code we sent to your WhatsApp *<input name="otpCode" id="otp-code" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code"></label>
+              <label>Enter the 6-digit code we sent you *<input name="otpCode" id="otp-code" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code"></label>
               <p class="form-hint" id="otp-msg"></p>
             </div>
 
@@ -130,13 +135,19 @@
     // Phone verification (only when switched on in the server settings)
     var otp = { enabled: false, exp: null, sig: null };
     var sendBtn = document.getElementById('otp-send'), box = document.getElementById('otp-box'), codeIn = document.getElementById('otp-code'), msg = document.getElementById('otp-msg');
-    fetch('/api/otp').then(function (r) { return r.json(); }).then(function (d) { otp.enabled = !!d.enabled; sendBtn.hidden = !otp.enabled; }).catch(function () {});
+    fetch('/api/otp').then(function (r) { return r.json(); }).then(function (d) {
+      otp.enabled = !!d.enabled; sendBtn.hidden = !otp.enabled;
+      var ch = d.channels || [];
+      document.querySelectorAll('.otp-channels .radio').forEach(function (l) { l.hidden = ch.indexOf(l.dataset.ch) < 0; });
+      document.getElementById('otp-channels').hidden = ch.length < 2;
+      var first = document.querySelector('.otp-channels input[value="' + ch[0] + '"]'); if (first) first.checked = true;
+    }).catch(function () {});
     sendBtn.addEventListener('click', async function () {
       var ph = document.getElementById('phone').value;
       if (!ph) { document.getElementById('phone').reportValidity(); return; }
       sendBtn.disabled = true; sendBtn.textContent = 'Sending…';
       try {
-        var r = await fetch('/api/otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: ph }) });
+        var r = await fetch('/api/otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: ph, channel: (document.querySelector('input[name=otpChannel]:checked') || {}).value }) });
         var d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Could not send the code.');
         otp.exp = d.exp; otp.sig = d.sig; box.hidden = false; codeIn.required = true; codeIn.focus();
@@ -202,7 +213,7 @@
         new FormData(form).forEach(function (v, k) { if (!(v instanceof File)) data[k] = v; });
         data.qtype = qsel.value;
         if (otp.enabled) {
-          if (!otp.sig) throw new Error('Please tap "Send code" and enter the code we send to your WhatsApp.');
+          if (!otp.sig) throw new Error('Please tap "Send code" and enter the code we send you.');
           data.otpExp = otp.exp; data.otpSig = otp.sig;
         }
         btn.textContent = 'Sending details…';

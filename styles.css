@@ -190,3 +190,6 @@ section[id] { scroll-margin-top: 72px; }
 .otp-send { white-space: nowrap; border-radius: 6px; }
 .otp-box { background: #fff1ec; border-radius: 8px; padding: 12px 14px; }
 .otp-box .form-hint { margin-top: 6px; }
+.otp-channels { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; font-size: .95rem; color: var(--muted); }
+.otp-channels .radio { display: inline-flex !important; align-items: center; gap: 6px; font-weight: 500; color: var(--ink); }
+.otp-channels input { width: 18px; height: 18px; accent-color: var(--navy); }
