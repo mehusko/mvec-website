@@ -1,7 +1,21 @@
 // Sends website inquiries to the MVEC Telegram group.
-// Needs two Vercel environment variables: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID.
+// Needs the Vercel environment variable TELEGRAM_BOT_TOKEN. TELEGRAM_CHAT_ID is optional:
+// if it's missing, the most recent group the bot has seen a message in is used.
 
 const clip = (v, n) => String(v ?? '').trim().slice(0, n);
+async function findGroupChatId(token) {
+  const r = await fetch(`https://api.telegram.org/bot${token}/getUpdates?allowed_updates=["message","my_chat_member"]`);
+  if (!r.ok) return null;
+  const data = await r.json();
+  const chats = (data.result || [])
+    .map((u) => (u.message || u.my_chat_member || {}).chat)
+    .filter((c) => c && (c.type === 'group' || c.type === 'supergroup'));
+  if (!chats.length) return null;
+  const chat = chats[chats.length - 1];
+  console.log(`Contact form: using Telegram group "${chat.title}" (${chat.id}). Set TELEGRAM_CHAT_ID to pin it.`);
+  return chat.id;
+}
+
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 export default async function handler(req, res) {
@@ -31,9 +45,16 @@ export default async function handler(req, res) {
   }
 
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) {
-    console.error('Contact form: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not set');
+  if (!token) {
+    console.error('Contact form: TELEGRAM_BOT_TOKEN is not set');
+    return res.status(500).json({ error: 'Form is not configured yet.' });
+  }
+  let chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!chatId) {
+    try { chatId = await findGroupChatId(token); } catch (e) { console.error('getUpdates failed', e); }
+  }
+  if (!chatId) {
+    console.error('Contact form: no Telegram group found. Add the bot to the group and send a message there.');
     return res.status(500).json({ error: 'Form is not configured yet.' });
   }
 
