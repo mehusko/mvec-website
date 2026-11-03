@@ -1,4 +1,6 @@
 {
   "cleanUrls": true,
-  "functions": { "api/*.js": { "maxDuration": 15 } }
+  "functions": {
+    "api/*.js": { "maxDuration": 15, "includeFiles": "quota-types.json" }
+  }
 }

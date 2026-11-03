@@ -180,3 +180,8 @@ section[id] { scroll-margin-top: 72px; }
 .contact-grid > *, .form-row > * { min-width: 0; }
 .contact-form input, .contact-form select, .contact-form textarea { width: 100%; max-width: 100%; }
 .consent input { width: 18px; }
+#doc-slots { display: grid; gap: 12px; }
+.doc-empty { margin: 0; padding: 14px; border: 1px dashed #c9ced6; border-radius: 8px; color: var(--muted); }
+.doc-for { margin: 0; color: var(--navy); }
+.opt { font-size: .8rem; font-weight: 500; color: var(--muted); font-family: Inter, sans-serif; }
+[hidden] { display: none !important; }

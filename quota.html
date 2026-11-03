@@ -58,15 +58,14 @@
               <label>Business registration no.<input name="regno" maxlength="60" placeholder="e.g. C-1234/2020"></label>
             </div>
             <div class="form-row">
-              <label>Sector
-                <select name="sector">
-                  <option value="">Select</option><option>Resort / hotel / guesthouse</option><option>Construction</option>
-                  <option>Retail / shop</option><option>Restaurant / cafe</option><option>Office / services</option>
-                  <option>Fisheries / agriculture</option><option>Domestic</option><option>Other</option>
+              <label>Where do you need the quota? *
+                <select name="qtype" id="qtype" required>
+                  <option value="">Select shop, vessel, godown…</option>
                 </select>
               </label>
               <label>Island / work site<input name="island" maxlength="120" placeholder="e.g. Male, Hulhumale, K. Maafushi"></label>
             </div>
+            <label id="qother-wrap" hidden>Please describe where *<input name="qother" id="qother" maxlength="120" placeholder="e.g. Boat yard, workshop, school"></label>
             <div class="form-row">
               <label>Contact person *<input name="contact" required maxlength="120"></label>
               <label>Position<input name="position" maxlength="80" placeholder="e.g. Owner, HR Manager"></label>
@@ -88,24 +87,11 @@
             <label>Job roles *<input name="roles" required maxlength="500" placeholder="e.g. 2 x Cook, 3 x Room attendant"></label>
             <label>Preferred nationality<input name="nationality" maxlength="120" placeholder="Optional"></label>
 
-            <h2 class="form-h">Documents</h2>
-            <p class="form-hint">Upload what you have now (PDF, photo or Word, up to 3 MB each). Anything missing can be sent later on WhatsApp.</p>
-            <label class="doc-slot">Business registration certificate
-              <input type="file" name="doc_reg" data-label="Business registration certificate" accept=".pdf,.doc,.docx,image/*,application/pdf">
+            <h2 class="form-h">Documents <small class="opt">(optional)</small></h2>
+            <p class="form-hint">If you already have documents ready (PDF, photo or Word, up to 3 MB each), you can upload them here. Otherwise we'll tell you exactly what we need after we review your request.</p>
+            <label class="doc-slot">Upload documents (optional) <small>(you can choose several)</small>
+              <input type="file" name="docs" data-label="Document" accept=".pdf,.doc,.docx,image/*,application/pdf" multiple>
             </label>
-            <label class="doc-slot">Site registration or lease agreement
-              <input type="file" name="doc_site" data-label="Site registration or lease agreement" accept=".pdf,.doc,.docx,image/*,application/pdf">
-            </label>
-            <label class="doc-slot">ID card of owner or authorised person
-              <input type="file" name="doc_id" data-label="ID card of owner or authorised person" accept=".pdf,.doc,.docx,image/*,application/pdf">
-            </label>
-            <label class="doc-slot">Site photos <small>(you can choose several)</small>
-              <input type="file" name="doc_photos" data-label="Site photos" accept=".pdf,.doc,.docx,image/*,application/pdf" multiple>
-            </label>
-            <label class="doc-slot">Other documents <small>(you can choose several)</small>
-              <input type="file" name="doc_other" data-label="Other documents" accept=".pdf,.doc,.docx,image/*,application/pdf" multiple>
-            </label>
-
             <label>Notes<textarea name="message" rows="3" maxlength="2000" placeholder="Anything else we should know"></textarea></label>
             <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
             <label class="consent"><input type="checkbox" name="consent" required> I confirm these documents are correct and agree that MVEC may use them to process my quota application. *</label>
@@ -135,6 +121,14 @@
     var btn = form.querySelector('button[type=submit]');
     var prog = form.querySelector('.progress'), bar = prog.querySelector('.bar');
     var MAX = 3 * 1024 * 1024;
+    var qsel = document.getElementById('qtype'), qow = document.getElementById('qother-wrap'), qo = document.getElementById('qother');
+    function toggleOther() { var o = qsel.value === 'other'; qow.hidden = !o; qo.required = o; }
+    fetch('/quota-types.json').then(function (r) { return r.json(); }).then(function (d) {
+      d.types.forEach(function (t) { var o = document.createElement('option'); o.value = t.id; o.textContent = t.label; qsel.appendChild(o); });
+      var pre = new URLSearchParams(location.search).get('type'); if (pre) { qsel.value = pre; toggleOther(); }
+    });
+    qsel.addEventListener('change', toggleOther);
+
 
     function toBase64(blob) {
       return new Promise(function (ok, fail) { var r = new FileReader(); r.onload = function () { ok(String(r.result).split(',')[1]); }; r.onerror = fail; r.readAsDataURL(blob); });
@@ -181,6 +175,7 @@
         }
         var data = { action: 'start', files: files.length };
         new FormData(form).forEach(function (v, k) { if (!(v instanceof File)) data[k] = v; });
+        data.qtype = qsel.value;
         btn.textContent = 'Sending details…';
         var out = await post(data);
         var failed = [];
@@ -192,7 +187,7 @@
           } catch (err) { failed.push(files[j].label + ' (' + err.message + ')'); }
           bar.style.width = Math.round((j + 1) / files.length * 100) + '%';
         }
-        form.reset();
+        form.reset(); toggleOther();
         if (failed.length) {
           status.innerHTML = 'Your application was received (reference <strong>' + out.ref + '</strong>), but these files did not upload: ' + failed.join(', ') + '. Please send them on WhatsApp with your reference.';
           status.classList.add('err');

@@ -1,0 +1,185 @@
+{
+  "note": "Quota types clients can choose on /quota. 'docs' is the internal checklist sent to MVEC's Telegram with each application (not shown to clients). Edit freely.",
+  "common": [
+    {
+      "id": "owner_id",
+      "label": "ID card or passport of owner / authorised person"
+    },
+    {
+      "id": "business_reg",
+      "label": "Business or company registration certificate"
+    }
+  ],
+  "types": [
+    {
+      "id": "vessel",
+      "label": "Vessel",
+      "docs": [
+        {
+          "id": "vessel_registry",
+          "label": "Vessel registry certificate"
+        },
+        {
+          "id": "vessel_permit",
+          "label": "Vessel operating permit / licence"
+        },
+        {
+          "id": "vessel_crew",
+          "label": "Current crew list"
+        },
+        {
+          "id": "vessel_photos",
+          "label": "Photos of the vessel",
+          "multiple": true
+        }
+      ]
+    },
+    {
+      "id": "construction",
+      "label": "Construction site / project",
+      "docs": [
+        {
+          "id": "project_contract",
+          "label": "Project contract or agreement"
+        },
+        {
+          "id": "building_permit",
+          "label": "Building / construction permit"
+        },
+        {
+          "id": "site_photos",
+          "label": "Site photos",
+          "multiple": true
+        }
+      ]
+    },
+    {
+      "id": "resort",
+      "label": "Resort / hotel / guesthouse",
+      "docs": [
+        {
+          "id": "tourism_licence",
+          "label": "Tourism operating licence"
+        },
+        {
+          "id": "lease",
+          "label": "Lease agreement or land/building ownership document"
+        },
+        {
+          "id": "site_photos",
+          "label": "Property photos",
+          "multiple": true
+        }
+      ]
+    },
+    {
+      "id": "shop",
+      "label": "Shop / retail",
+      "docs": [
+        {
+          "id": "trade_permit",
+          "label": "Trade / business permit"
+        },
+        {
+          "id": "lease",
+          "label": "Shop lease agreement"
+        },
+        {
+          "id": "site_photos",
+          "label": "Shop photos (inside and outside)",
+          "multiple": true
+        }
+      ]
+    },
+    {
+      "id": "godown",
+      "label": "Godown / warehouse",
+      "docs": [
+        {
+          "id": "lease",
+          "label": "Godown lease agreement"
+        },
+        {
+          "id": "trade_permit",
+          "label": "Trade / business permit"
+        },
+        {
+          "id": "site_photos",
+          "label": "Godown photos (inside and outside)"
+        }
+      ]
+    },
+    {
+      "id": "restaurant",
+      "label": "Restaurant / cafe",
+      "docs": [
+        {
+          "id": "food_licence",
+          "label": "Food establishment licence"
+        },
+        {
+          "id": "lease",
+          "label": "Premises lease agreement"
+        },
+        {
+          "id": "site_photos",
+          "label": "Premises photos",
+          "multiple": true
+        }
+      ]
+    },
+    {
+      "id": "office",
+      "label": "Office / services",
+      "docs": [
+        {
+          "id": "lease",
+          "label": "Office lease agreement"
+        },
+        {
+          "id": "site_photos",
+          "label": "Office photos",
+          "multiple": true
+        }
+      ]
+    },
+    {
+      "id": "agri",
+      "label": "Agriculture / fisheries",
+      "docs": [
+        {
+          "id": "land_lease",
+          "label": "Land lease or allocation document"
+        },
+        {
+          "id": "agri_reg",
+          "label": "Farm / fishery registration"
+        },
+        {
+          "id": "site_photos",
+          "label": "Site photos",
+          "multiple": true
+        }
+      ]
+    },
+    {
+      "id": "domestic",
+      "label": "Household / domestic worker",
+      "docs": [
+        {
+          "id": "address_proof",
+          "label": "Proof of home address (e.g. lease or ownership)"
+        },
+        {
+          "id": "family_list",
+          "label": "List of household members"
+        }
+      ]
+    },
+    {
+      "id": "other",
+      "label": "Other (please specify)",
+      "docs": []
+    }
+  ]
+}

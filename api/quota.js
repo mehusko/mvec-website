@@ -2,6 +2,18 @@
 //   1) {action:"start", ...company details}  -> sends a summary to Telegram, returns a reference
 //   2) {action:"file", ref, label, file:{name,type,data}} -> sends one document to Telegram (one request per file)
 import { clip, esc, isEmail, readBody, sendDocument, sendMessage } from '../lib/telegram.js';
+import fs from 'node:fs';
+import path from 'node:path';
+
+// Quota types and MVEC's internal document checklist per type (also used by the page's dropdown).
+let TYPES = null;
+function quotaTypes() {
+  if (!TYPES) {
+    try { TYPES = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'quota-types.json'), 'utf8')); }
+    catch (e) { console.error('quota-types.json not readable', e.message); TYPES = { common: [], types: [] }; }
+  }
+  return TYPES;
+}
 
 const MAX_FILE_BYTES = 3.2 * 1024 * 1024;
 const ALLOWED = { 'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp',
@@ -42,7 +54,8 @@ export default async function handler(req, res) {
     const f = {
       company: clip(body.company, 160),
       regno: clip(body.regno, 60),
-      sector: clip(body.sector, 80),
+      qtype: clip(body.qtype, 40),
+      qother: clip(body.qother, 120),
       island: clip(body.island, 120),
       contact: clip(body.contact, 120),
       position: clip(body.position, 80),
@@ -55,17 +68,21 @@ export default async function handler(req, res) {
       message: clip(body.message, 2000),
       files: Math.max(0, Math.min(20, parseInt(body.files, 10) || 0)),
     };
-    if (!f.company || !f.contact || !f.phone || !f.email || !isEmail(f.email) || !f.workers || !f.roles) {
+    if (!f.company || !f.qtype || (f.qtype === 'other' && !f.qother) || !f.contact || !f.phone || !f.email || !isEmail(f.email) || !f.workers || !f.roles) {
       return res.status(400).json({ error: 'Please fill in all required fields.' });
     }
+    const cfg = quotaTypes();
+    const type = cfg.types.find((t) => t.id === f.qtype);
+    const typeLabel = f.qtype === 'other' ? `Other: ${f.qother}` : (type ? type.label : f.qtype);
+    const checklist = type ? [...(cfg.common || []), ...(type.docs || [])] : (cfg.common || []);
     const ref = newRef();
     const line = (label, v) => (v ? `<b>${label}:</b> ${esc(v)}` : null);
     const text = [
       `<b>🏢 New quota application</b>  <code>${ref}</code>`,
       '',
+      line('Quota for', typeLabel),
       line('Company', f.company),
       line('Registration no.', f.regno),
-      line('Sector', f.sector),
       line('Island / site', f.island),
       line('Contact person', f.position ? `${f.contact} (${f.position})` : f.contact),
       line('Phone', f.phone),
@@ -78,7 +95,10 @@ export default async function handler(req, res) {
       f.message ? '' : null,
       f.message ? esc(f.message) : null,
       '',
-      f.files ? `<i>${f.files} document(s) following…</i>` : '<i>No documents uploaded yet</i>',
+      f.files ? `<i>${f.files} document(s) from the client following…</i>` : '<i>Client uploaded no documents</i>',
+      checklist.length ? '' : null,
+      checklist.length ? `<b>📋 Documents to collect (${esc(f.qtype === 'other' ? 'general' : typeLabel)}):</b>` : null,
+      ...checklist.map((d) => `• ${esc(d.label)}`),
     ].filter((l) => l !== null).join('\n');
     await sendMessage(text);
     return res.status(200).json({ ok: true, ref });
