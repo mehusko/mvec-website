@@ -1,7 +1,7 @@
 :root {
   --navy: #0f2138;
-  --teal: #ff6b4a;
-  --teal-dark: #e8553a;
+  --teal: #ffc72c;
+  --teal-dark: #f0b400;
   --sand: #f6f1e7;
   --ink: #1d2733;
   --muted: #5b6776;
@@ -162,3 +162,16 @@ section[id] { scroll-margin-top: 72px; }
   .nav-links { display: none; position: absolute; top: 72px; left: 0; right: 0; background: var(--navy); flex-direction: column; padding: 16px; gap: 1em; }
   .nav-links.open { display: flex; }
 }
+
+/* Yellow theme: dark text on yellow, darker gold for text on white */
+.btn, .btn:hover, .btn-small, .btn-block { color: var(--navy) !important; }
+.btn-ghost { color: var(--navy) !important; }
+.btn-ghost:hover { color: var(--white) !important; }
+.contact-form .btn { color: var(--white) !important; }
+a { color: #8a6100; }
+.eyebrow { color: #8a6100; }
+.hero-points li::before { color: #c99500; }
+.hero, .page-hero { background: linear-gradient(180deg, #fff6d6 0%, var(--white) 100%); }
+.worker .tag { background: #fff3c4; color: #7a5600; }
+.contact-list em, .placeholder-note { color: #7a5600; }
+.talk-list a { color: var(--white); }
