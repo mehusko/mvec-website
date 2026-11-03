@@ -2,6 +2,7 @@
 //   1) {action:"start", ...company details}  -> sends a summary to Telegram, returns a reference
 //   2) {action:"file", ref, label, file:{name,type,data}} -> sends one document to Telegram (one request per file)
 import { clip, esc, isEmail, readBody, sendDocument, sendMessage } from '../lib/telegram.js';
+import { normalizePhone, otpEnabled, verifyCode } from '../lib/otp.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -71,6 +72,12 @@ export default async function handler(req, res) {
     if (!f.company || !f.qtype || (f.qtype === 'other' && !f.qother) || !f.contact || !f.phone || !f.email || !isEmail(f.email) || !f.workers || !f.roles) {
       return res.status(400).json({ error: 'Please fill in all required fields.' });
     }
+    if (otpEnabled()) {
+      const ph = normalizePhone(f.phone);
+      if (!verifyCode(ph, clip(body.otpCode, 6), body.otpExp, clip(body.otpSig, 100))) {
+        return res.status(400).json({ error: 'Please verify your phone number with the code we sent you.' });
+      }
+    }
     const cfg = quotaTypes();
     const type = cfg.types.find((t) => t.id === f.qtype);
     const typeLabel = f.qtype === 'other' ? `Other: ${f.qother}` : (type ? type.label : f.qtype);
@@ -85,7 +92,7 @@ export default async function handler(req, res) {
       line('Registration no.', f.regno),
       line('Island / site', f.island),
       line('Contact person', f.position ? `${f.contact} (${f.position})` : f.contact),
-      line('Phone', f.phone),
+      line('Phone', otpEnabled() ? `${f.phone} ✅ verified` : f.phone),
       line('Email', f.email),
       '',
       line('Workers needed', f.workers),

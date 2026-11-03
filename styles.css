@@ -185,3 +185,8 @@ section[id] { scroll-margin-top: 72px; }
 .doc-for { margin: 0; color: var(--navy); }
 .opt { font-size: .8rem; font-weight: 500; color: var(--muted); font-family: Inter, sans-serif; }
 [hidden] { display: none !important; }
+.otp-row { display: flex; gap: 8px; }
+.otp-row input { flex: 1; min-width: 0; }
+.otp-send { white-space: nowrap; border-radius: 6px; }
+.otp-box { background: #fff1ec; border-radius: 8px; padding: 12px 14px; }
+.otp-box .form-hint { margin-top: 6px; }

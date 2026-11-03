@@ -71,8 +71,14 @@
               <label>Position<input name="position" maxlength="80" placeholder="e.g. Owner, HR Manager"></label>
             </div>
             <div class="form-row">
-              <label>Phone *<input name="phone" type="tel" required maxlength="40" placeholder="+960 XXX XXXX"></label>
+              <label>Phone (WhatsApp) *
+                <span class="otp-row"><input name="phone" id="phone" type="tel" required maxlength="40" placeholder="+960 XXX XXXX"><button type="button" class="btn btn-small otp-send" id="otp-send" hidden>Send code</button></span>
+              </label>
               <label>Email *<input name="email" type="email" required maxlength="160"></label>
+            </div>
+            <div class="otp-box" id="otp-box" hidden>
+              <label>Enter the 6-digit code we sent to your WhatsApp *<input name="otpCode" id="otp-code" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code"></label>
+              <p class="form-hint" id="otp-msg"></p>
             </div>
 
             <h2 class="form-h">Quota needed</h2>
@@ -121,6 +127,25 @@
     var btn = form.querySelector('button[type=submit]');
     var prog = form.querySelector('.progress'), bar = prog.querySelector('.bar');
     var MAX = 3 * 1024 * 1024;
+    // Phone verification (only when switched on in the server settings)
+    var otp = { enabled: false, exp: null, sig: null };
+    var sendBtn = document.getElementById('otp-send'), box = document.getElementById('otp-box'), codeIn = document.getElementById('otp-code'), msg = document.getElementById('otp-msg');
+    fetch('/api/otp').then(function (r) { return r.json(); }).then(function (d) { otp.enabled = !!d.enabled; sendBtn.hidden = !otp.enabled; }).catch(function () {});
+    sendBtn.addEventListener('click', async function () {
+      var ph = document.getElementById('phone').value;
+      if (!ph) { document.getElementById('phone').reportValidity(); return; }
+      sendBtn.disabled = true; sendBtn.textContent = 'Sending…';
+      try {
+        var r = await fetch('/api/otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: ph }) });
+        var d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Could not send the code.');
+        otp.exp = d.exp; otp.sig = d.sig; box.hidden = false; codeIn.required = true; codeIn.focus();
+        msg.textContent = 'Code sent. It is valid for 10 minutes.';
+        var left = 45; sendBtn.textContent = 'Resend (' + left + ')';
+        var t = setInterval(function () { left--; sendBtn.textContent = 'Resend (' + left + ')'; if (left <= 0) { clearInterval(t); sendBtn.disabled = false; sendBtn.textContent = 'Resend code'; } }, 1000);
+      } catch (err) { msg.textContent = err.message; box.hidden = false; sendBtn.disabled = false; sendBtn.textContent = 'Send code'; }
+    });
+
     var qsel = document.getElementById('qtype'), qow = document.getElementById('qother-wrap'), qo = document.getElementById('qother');
     function toggleOther() { var o = qsel.value === 'other'; qow.hidden = !o; qo.required = o; }
     fetch('/quota-types.json').then(function (r) { return r.json(); }).then(function (d) {
@@ -176,6 +201,10 @@
         var data = { action: 'start', files: files.length };
         new FormData(form).forEach(function (v, k) { if (!(v instanceof File)) data[k] = v; });
         data.qtype = qsel.value;
+        if (otp.enabled) {
+          if (!otp.sig) throw new Error('Please tap "Send code" and enter the code we send to your WhatsApp.');
+          data.otpExp = otp.exp; data.otpSig = otp.sig;
+        }
         btn.textContent = 'Sending details…';
         var out = await post(data);
         var failed = [];
@@ -187,7 +216,7 @@
           } catch (err) { failed.push(files[j].label + ' (' + err.message + ')'); }
           bar.style.width = Math.round((j + 1) / files.length * 100) + '%';
         }
-        form.reset(); toggleOther();
+        form.reset(); toggleOther(); otp.sig = null; box.hidden = true; codeIn.required = false;
         if (failed.length) {
           status.innerHTML = 'Your application was received (reference <strong>' + out.ref + '</strong>), but these files did not upload: ' + failed.join(', ') + '. Please send them on WhatsApp with your reference.';
           status.classList.add('err');
