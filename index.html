@@ -15,8 +15,8 @@
   <header class="site-header">
     <div class="container nav">
       <a href="#top" class="brand" aria-label="MVEC home">
-        <span class="brand-mark">MV</span>
-        <span class="brand-text">MVEC<small>Maldives Employment Consultant</small></span>
+        <span class="brand-mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></span>
+        <span class="brand-text">mvec</span>
       </a>
       <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
       <nav class="nav-links">
@@ -24,7 +24,8 @@
         <a href="#process">How it works</a>
         <a href="#about">About</a>
         <a href="#faq">FAQ</a>
-        <a href="#contact" class="btn btn-small">Contact us</a>
+        <a href="#contact">Contact</a>
+        <a href="#contact" class="btn btn-small">Hire help</a>
       </nav>
     </div>
   </header>
@@ -112,22 +113,56 @@
       <div class="container contact-grid">
         <div>
           <h2>Contact us</h2>
-          <p>Tell us about your hiring needs and we'll get back to you within one working day.</p>
-          <ul class="contact-list">
-            <li><strong>Phone:</strong> <a href="tel:+9607637762">+960 763 7762</a></li>
-            <li><strong>WhatsApp:</strong> <a href="https://wa.me/9607637762">+960 763 7762</a></li>
-            <li><strong>Email:</strong> <a href="mailto:info@mvec.mv">info@mvec.mv</a></li>
-            <li><strong>Office:</strong> [Address], Malé, Maldives <em>(placeholder)</em></li>
-            <li><strong>Hours:</strong> Sunday to Thursday, 9:00 to 17:00</li>
-          </ul>
-        </div>
-        <form class="contact-form" action="mailto:info@mvec.mv" method="post" enctype="text/plain">
-          <label>Your name<input name="name" required></label>
-          <label>Company<input name="company"></label>
-          <label>Phone or email<input name="contact" required></label>
-          <label>How can we help?<textarea name="message" rows="4" required></textarea></label>
-          <button class="btn" type="submit">Send message</button>
+          <p class="section-lead">Fill in the form and we'll get back to you within 24 hours.</p>
+          <form class="contact-form" id="contact-form" novalidate>
+          <div class="form-row">
+            <label>Full name *<input name="name" placeholder="Your full name" required maxlength="120"></label>
+            <label>Email address *<input name="email" type="email" placeholder="you@example.com" required maxlength="160"></label>
+          </div>
+          <div class="form-row">
+            <label>Phone number *<input name="phone" type="tel" placeholder="+960 XXX XXXX" required maxlength="40"></label>
+            <label>Service type *
+              <select name="service" required>
+                <option value="">Select a service</option>
+                <option>Expat quota</option>
+                <option>Work permit</option>
+                <option>Work visa &amp; entry</option>
+                <option>Renewal or transfer</option>
+                <option>Recruitment</option>
+                <option>Compliance support</option>
+                <option>Other</option>
+              </select>
+            </label>
+          </div>
+          <label>How did you hear about us?
+            <select name="source">
+              <option value="">Select an option</option>
+              <option>Google search</option>
+              <option>Facebook</option>
+              <option>Instagram</option>
+              <option>WhatsApp</option>
+              <option>Friend or referral</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label>Your message *<textarea name="message" rows="4" placeholder="Who you need, which island, when they should start" required maxlength="3000"></textarea></label>
+          <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <p class="form-hint">Fields marked * are required.</p>
+          <button class="btn" type="submit">Send inquiry</button>
+          <p class="form-status" role="status" aria-live="polite"></p>
         </form>
+        </div>
+        <aside class="talk-card">
+          <h3>Prefer to talk?</h3>
+          <p>Message us on WhatsApp or call the office.</p>
+          <a class="btn btn-block" href="https://wa.me/9607637762" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1.4-4A8 8 0 1 1 8 18.6z"/></svg> Chat on WhatsApp</a>
+          <ul class="talk-list">
+            <li><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg><div><span>Phone</span><a href="tel:+9607637762">+960 763 7762</a></div></li>
+            <li><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><div><span>Email</span><a href="mailto:info@mvec.mv">info@mvec.mv</a></div></li>
+            <li><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><div><span>Office</span><strong>Majeedhee Magu, Male<br>Republic of Maldives</strong></div></li>
+            <li><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div><span>Hours</span><strong>Sunday – Thursday<br>9:00 AM – 5:00 PM</strong></div></li>
+          </ul>
+        </aside>
       </div>
     </section>
   </main>
@@ -143,6 +178,35 @@
     const t = document.querySelector('.nav-toggle'), l = document.querySelector('.nav-links');
     t.addEventListener('click', () => { const o = l.classList.toggle('open'); t.setAttribute('aria-expanded', o); });
     l.querySelectorAll('a').forEach(a => a.addEventListener('click', () => l.classList.remove('open')));
+
+    const form = document.getElementById('contact-form');
+    const status = form.querySelector('.form-status');
+    const btn = form.querySelector('button[type=submit]');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      status.className = 'form-status';
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+      btn.disabled = true; btn.textContent = 'Sending…';
+      try {
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(form)))
+        });
+        if (!res.ok) throw new Error();
+        form.reset();
+        status.textContent = "Thank you! Your inquiry has been sent. We'll get back to you within 24 hours.";
+        status.classList.add('ok');
+      } catch {
+        status.textContent = 'Sorry, something went wrong. Please call or WhatsApp us on +960 763 7762.';
+        status.classList.add('err');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Send inquiry';
+      }
+    });
   </script>
 </body>
 </html>
