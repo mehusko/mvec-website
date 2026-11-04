@@ -6,7 +6,6 @@
 // Setup (once): send a request with header  x-setup-key: <TELEGRAM_WEBHOOK_SECRET>
 //   GET  /api/telegram  -> current webhook info
 //   PUT  /api/telegram  -> points the bot's webhook at this endpoint
-//   or from a browser: GET /api/telegram?key=<secret> (info), add &set=1 to set the webhook
 import { esc, readBody, sendMessage } from '../lib/telegram.js';
 import { aiReady, askAI } from '../lib/ai.js';
 
@@ -23,11 +22,9 @@ export default async function handler(req, res) {
   const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
 
   if (req.method === 'GET' || req.method === 'PUT') {
-    // The setup key can also be passed as ?key=... so the webhook can be set from a browser (add &set=1).
-    const key = req.headers['x-setup-key'] || (req.query && req.query.key);
-    if (!secret || key !== secret) return res.status(403).json({ error: 'Forbidden' });
-    const wantSet = req.method === 'PUT' || (req.query && req.query.set === '1');
-    if (!wantSet) return res.status(200).json(await api('getWebhookInfo'));
+    // Setup only with the x-setup-key header, never in the URL (URLs end up in logs and history).
+    if (!secret || req.headers['x-setup-key'] !== secret) return res.status(403).json({ error: 'Forbidden' });
+    if (req.method === 'GET') return res.status(200).json(await api('getWebhookInfo'));
     const url = `https://${req.headers.host}/api/telegram`;
     const out = await api('setWebhook', { url, secret_token: secret, allowed_updates: ['message'], drop_pending_updates: true });
     return res.status(200).json({ url, ...out });
