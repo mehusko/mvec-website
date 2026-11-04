@@ -177,6 +177,11 @@
       ]
     },
     {
+      "id": "consultation",
+      "label": "Not sure – I need a consultation",
+      "docs": []
+    },
+    {
       "id": "other",
       "label": "Other (please specify)",
       "docs": []
