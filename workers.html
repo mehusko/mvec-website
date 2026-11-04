@@ -21,16 +21,21 @@
       <a href="/" class="brand" aria-label="MVEC home">
         <span class="brand-mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></span>
         <span class="brand-text">mvec</span>
+        <span class="brand-sub">Maldives Employment<em>Consultancy</em></span>
       </a>
       <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
       <nav class="nav-links">
-        <a href="/#services">Services</a>
-        <a href="/quota">Apply for quota</a>
-        <a href="/workers">Browse workers</a>
-        <a href="/jobs">Find a job</a>
-        <a href="/#about">About</a>
-        <a href="/#contact">Contact</a>
-        <a href="/#contact" class="btn btn-small">Hire help</a>
+        <div class="nav-main">
+          <a href="/#services">Services</a>
+          <a href="/quota">Apply for quota</a>
+          <a href="/workers" class="active" aria-current="page">Browse workers</a>
+          <a href="/#about">About</a>
+          <a href="/contact">Contact</a>
+        </div>
+        <div class="nav-side">
+          <a href="/jobs">Find a job</a>
+          <a href="/contact" class="btn btn-small">Hire help</a>
+        </div>
       </nav>
     </div>
   </header>
@@ -38,8 +43,9 @@
   <main>
     <section class="page-hero">
       <div class="container">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span>Browse workers</nav>
         <p class="eyebrow">For employers</p>
-        <h1>Browse available workers</h1>
+        <h1>Browse available <mark>workers</mark></h1>
         <p class="lead">See the kinds of workers we place. Pick one, or tell us the role you need, and we'll send you matching candidates with their CVs.</p>
         <div class="filters" role="group" aria-label="Filter by sector">
           <button class="chip active" data-filter="all">All</button>
