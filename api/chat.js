@@ -24,10 +24,24 @@ function readToken(token) {
   return want.length === got.length && crypto.timingSafeEqual(want, got) ? phone : null;
 }
 
-const enabled = () => aiReady() && otpEnabled();
+// Sign-in is required only once a phone-code sender is set up. Until then guests can chat,
+// with a small per-visitor limit (per server instance) to keep costs safe.
+const enabled = () => aiReady();
+const signinRequired = () => otpEnabled();
+const GUEST_LIMIT = 15, GUEST_WINDOW_MS = 60 * 60 * 1000;
+const guestHits = new Map();
+function guestAllowed(req) {
+  const ip = String(req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
+  const now = Date.now();
+  const hits = (guestHits.get(ip) || []).filter((t) => now - t < GUEST_WINDOW_MS);
+  if (hits.length >= GUEST_LIMIT) return false;
+  hits.push(now); guestHits.set(ip, hits);
+  if (guestHits.size > 5000) guestHits.clear();
+  return true;
+}
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') return res.status(200).json({ enabled: enabled(), channels: channels() });
+  if (req.method === 'GET') return res.status(200).json({ enabled: enabled(), signin: signinRequired(), channels: channels() });
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'Method not allowed' });
@@ -46,8 +60,12 @@ export default async function handler(req, res) {
   }
 
   if (body.action === 'ask') {
-    const phone = readToken(body.token);
-    if (!phone) return res.status(401).json({ error: 'Please sign in again.', signin: true });
+    let phone = readToken(body.token);
+    if (!phone && signinRequired()) return res.status(401).json({ error: 'Please sign in again.', signin: true });
+    if (!phone) {
+      if (!guestAllowed(req)) return res.status(429).json({ error: 'You have sent a lot of questions. Please WhatsApp us on +960 763 7762 and a colleague will help.' });
+      phone = null;
+    }
     const history = cleanHistory(body.messages);
     if (!history.length) return res.status(400).json({ error: 'Please type a question.' });
     let reply;
@@ -59,7 +77,7 @@ export default async function handler(req, res) {
     }
     const q = history[history.length - 1].content;
     try {
-      await sendMessage(`<b>💬 Website chat</b> (+${esc(phone)})\n\n<b>Q:</b> ${esc(q.slice(0, 1500))}\n\n<b>A:</b> ${esc(reply.slice(0, 2000))}`);
+      await sendMessage(`<b>💬 Website chat</b> (${phone ? '+' + esc(phone) : 'guest'})\n\n<b>Q:</b> ${esc(q.slice(0, 1500))}\n\n<b>A:</b> ${esc(reply.slice(0, 2000))}`);
     } catch (e) { console.error('Chat notify:', e.message); }
     return res.status(200).json({ reply });
   }

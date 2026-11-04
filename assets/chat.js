@@ -6,7 +6,7 @@
   function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
   var state = load(); // { token, phone, messages: [] }
   state.messages = state.messages || [];
-  var channels = [], otp = null;
+  var channels = [], otp = null, signin = true;
 
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }
   async function post(data) {
@@ -19,6 +19,7 @@
   fetch('/api/chat').then(function (r) { return r.json(); }).then(function (d) {
     if (!d || !d.enabled) return;
     channels = d.channels || [];
+    signin = d.signin !== false;
     build();
   }).catch(function () {});
 
@@ -43,7 +44,7 @@
 
   function render(body) {
     body.innerHTML = '';
-    if (state.token) chatView(body); else signInView(body);
+    if (state.token || !signin) chatView(body); else signInView(body);
   }
 
   function signInView(body) {
@@ -89,7 +90,8 @@
     form.appendChild(input); form.appendChild(send);
     var foot = el('p', 'chat-foot');
     var out = el('button', 'chat-link', 'Sign out'); out.type = 'button';
-    foot.appendChild(document.createTextNode('Need a person? WhatsApp +960 763 7762 · ')); foot.appendChild(out);
+    foot.appendChild(document.createTextNode('Need a person? WhatsApp +960 763 7762'));
+    if (state.token) { foot.appendChild(document.createTextNode(' · ')); foot.appendChild(out); }
     body.appendChild(log); body.appendChild(form); body.appendChild(foot);
     log.scrollTop = log.scrollHeight; input.focus();
 
