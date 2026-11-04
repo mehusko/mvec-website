@@ -83,7 +83,7 @@
               <label class="radio" data-ch="whatsapp" hidden><input type="radio" name="otpChannel" value="whatsapp"> WhatsApp</label>
             </div>
             <div class="otp-box" id="otp-box" hidden>
-              <label>Enter the 6-digit code we sent you *<input name="otpCode" id="otp-code" inputmode="numeric" pattern="\d{6}" maxlength="6" autocomplete="one-time-code"></label>
+              <label>Enter the code we sent you *<input name="otpCode" id="otp-code" pattern="[A-Za-z0-9]{3,10}" maxlength="10" autocomplete="one-time-code" autocapitalize="characters"></label>
               <p class="form-hint" id="otp-msg"></p>
             </div>
 

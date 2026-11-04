@@ -74,7 +74,7 @@ export default async function handler(req, res) {
     }
     if (otpEnabled()) {
       const ph = normalizePhone(f.phone);
-      if (!verifyCode(ph, clip(body.otpCode, 6), body.otpExp, clip(body.otpSig, 100))) {
+      if (!(await verifyCode(ph, clip(body.otpCode, 10), body.otpExp, clip(body.otpSig, 300)))) {
         return res.status(400).json({ error: 'Please verify your phone number with the code we sent you.' });
       }
     }
