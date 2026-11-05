@@ -292,3 +292,27 @@ h3 { font-size: 1.05rem; }
 .chat-form { display: flex; gap: 8px; }
 .chat-link { background: none; border: 0; padding: 0; color: var(--teal-dark); text-decoration: underline; cursor: pointer; font: inherit; }
 @media (max-width: 480px) { .chat-panel { right: 16px; bottom: 156px; } .chat-fab { right: 20px; } }
+
+/* Language switcher (assets/i18n.js) */
+.lang-switch { display: inline-flex; border: 1px solid rgba(255,255,255,.3); border-radius: 999px; overflow: hidden; }
+.lang-switch button { background: transparent; color: #fff; border: 0; padding: .35em .75em; font: 600 .82rem/1.2 Inter, "Noto Sans Bengali", "Noto Sans Devanagari", sans-serif; cursor: pointer; }
+.lang-switch button + button { border-left: 1px solid rgba(255,255,255,.3); }
+.lang-switch button[aria-pressed="true"] { background: var(--teal); }
+.lang-switch button:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+.lang-bn body, .lang-bn h1, .lang-bn h2, .lang-bn h3, .lang-bn .stats strong, .lang-bn .brand-sub, .lang-bn input, .lang-bn select, .lang-bn textarea, .lang-bn button { font-family: Inter, "Noto Sans Bengali", sans-serif; }
+.lang-ne body, .lang-ne h1, .lang-ne h2, .lang-ne h3, .lang-ne .stats strong, .lang-ne .brand-sub, .lang-ne input, .lang-ne select, .lang-ne textarea, .lang-ne button { font-family: Inter, "Noto Sans Devanagari", sans-serif; }
+.lang-bn h1, .lang-bn h2, .lang-bn h3, .lang-ne h1, .lang-ne h2, .lang-ne h3 { font-weight: 700; line-height: 1.35; letter-spacing: 0; }
+.lang-bn body, .lang-ne body { line-height: 1.75; }
+.lang-switch.lang-top { margin-left: auto; margin-right: 6px; }
+@media (max-width: 520px) {
+  .lang-switch.lang-top button { padding: .35em .55em; font-size: .78rem; }
+  .nav:has(.lang-top) .brand-sub { display: none; }
+}
+.lang-switch { flex-shrink: 0; }
+@media (max-width: 400px) {
+  .nav:has(.lang-top) { gap: 10px; }
+  .lang-switch.lang-top { margin-right: 0; }
+  .lang-switch.lang-top button { padding: .35em .45em; font-size: .72rem; }
+  .nav:has(.lang-top) .brand-text { font-size: 1.35rem; }
+  .nav:has(.lang-top) .brand-mark { width: 32px; height: 32px; }
+}
