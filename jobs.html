@@ -125,7 +125,8 @@
           return '<article class="card worker job">' +
             '<div><h3 data-no-i18n>' + esc(j.title) + '</h3>' + (j.sector ? '<span class="tag" data-no-i18n>' + esc(j.sector) + '</span>' : '') + '</div>' +
             '<dl>' + row('Place', j.place) + row('Type', j.type) + row('Pay', j.pay) + row('Requirements', j.requirements) + '</dl>' +
-            '<button class="btn btn-small" data-apply="' + esc(j.title + ' (' + j.id + ')') + '">Apply for this job</button></article>';
+            '<div class="job-actions"><button class="btn btn-small" data-apply="' + esc(j.title + ' (' + j.id + ')') + '">Apply for this job</button>' +
+            '<a class="wa-link" target="_blank" rel="noopener" href="https://wa.me/9607637762?text=' + encodeURIComponent('Hi MVEC, I want to apply for ' + j.title + ' (' + j.id + ').\nName: \nCountry: ') + '">Apply on WhatsApp</a></div></article>';
         }).join('') : '<p>No open jobs right now. Register below and we\'ll contact you when one opens.</p>';
       }).catch(function () { grid.innerHTML = '<p>Could not load the jobs. You can still apply below.</p>'; });
       document.addEventListener('click', function (e) {

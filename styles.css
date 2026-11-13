@@ -329,3 +329,20 @@ h3 { font-size: 1.05rem; }
 .next-steps li::before { content: counter(s); display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--teal); color: var(--white); font-weight: 700; }
 .next-steps strong { color: var(--white); display: block; }
 .no-fee { background: rgba(255,107,74,.15); border-left: 3px solid var(--teal); padding: 12px 14px; border-radius: 4px; margin: 0 0 1.6em; color: var(--white); }
+.reg-ways { display: grid; grid-template-columns: repeat(3, minmax(0, 220px)); gap: 12px; margin: 1.8em 0 1em; }
+.reg-way { display: block; padding: 16px 18px; border: 1px solid rgba(255,255,255,.3); border-radius: 6px; text-decoration: none; color: #c9d3df; }
+.reg-way strong { display: block; color: var(--white); font-size: 1.05rem; }
+.reg-way span { font-size: .9rem; }
+.reg-way:hover { border-color: var(--teal); background: rgba(255,107,74,.12); }
+.reg-way:first-child { background: #25d366; border-color: #25d366; color: #0b3d20; }
+.reg-way:first-child strong { color: #062b15; }
+.reg-phone { margin: 0; color: #c9d3df; }
+.reg-phone a, .talk-phone a { color: var(--white); font-weight: 700; font-size: 1.15rem; text-decoration: none; border-bottom: 2px solid var(--teal); }
+.talk-phone { margin: 0 0 1em; }
+.more { border: 1px solid var(--line); border-radius: 6px; padding: 0 14px; }
+.more summary { cursor: pointer; padding: 12px 0; font-weight: 600; color: var(--navy); }
+.more-body { display: grid; gap: 14px; padding-bottom: 14px; }
+.job-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: auto; }
+.job-actions .btn { margin-top: 0; }
+.wa-link { font-weight: 600; font-size: .92rem; color: #128c4a; }
+@media (max-width: 640px) { .reg-ways { grid-template-columns: 1fr; } }

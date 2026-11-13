@@ -27,8 +27,8 @@ export default async function handler(req, res) {
     available: clip(body.available, 60),
     skills: clip(body.skills, 2000),
   };
-  if (!f.name || !f.dob || !f.country || !f.phone || !f.role || !/^\d{4}-\d{2}-\d{2}$/.test(f.dob) || (f.email && !isEmail(f.email))) {
-    return res.status(400).json({ error: 'Please fill in all required fields.' });
+  if (!f.name || !f.phone || (f.dob && !/^\d{4}-\d{2}-\d{2}$/.test(f.dob)) || (f.email && !isEmail(f.email))) {
+    return res.status(400).json({ error: 'Please fill in your name and phone number.' });
   }
   if (!body.consent) return res.status(400).json({ error: 'Please tick the box to agree.' });
 
@@ -36,13 +36,13 @@ export default async function handler(req, res) {
   if (up.error) return res.status(400).json({ error: up.error });
   const file = up.file;
 
-  const age = Math.floor((Date.now() - Date.parse(f.dob)) / (365.25 * 864e5));
+  const age = f.dob && Math.floor((Date.now() - Date.parse(f.dob)) / (365.25 * 864e5));
   const line = (label, v) => (v ? `<b>${label}:</b> ${esc(v)}` : null);
   const text = [
     '<b>🪪 New worker registration</b>',
     '',
     line('Name', f.name),
-    line('Date of birth', f.dob + (age > 0 && age < 100 ? ` (age ${age})` : '')),
+    line('Date of birth', f.dob && f.dob + (age > 0 && age < 100 ? ` (age ${age})` : '')),
     line('Gender', f.gender),
     line('Country', f.country),
     line('Currently in', f.location),

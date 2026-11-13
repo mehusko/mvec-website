@@ -47,80 +47,89 @@
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/jobs">Find a job</a><span aria-hidden="true">/</span>Register</nav>
         <p class="eyebrow">For job seekers</p>
         <h1>Register as a <mark>worker</mark></h1>
-        <p class="lead">Create your free profile in a few minutes. When a family or company in the Maldives needs someone like you, we'll contact you on WhatsApp or phone.</p>
-        <div class="hero-actions">
-          <a href="#register" class="btn">Start my profile <span aria-hidden="true">→</span></a>
-          <a href="/jobs#open-jobs" class="btn btn-ghost btn-light">See open jobs</a>
+        <p class="lead">Registering is free and takes one minute. Send us your name and phone number in the way that is easiest for you, and we'll contact you when a matching job opens.</p>
+        <div class="reg-ways">
+          <a class="reg-way" href="https://wa.me/9607637762?text=Hi%20MVEC%2C%20I%20want%20to%20register%20for%20a%20job.%0AName%3A%20%0ACountry%3A%20%0AJob%20I%20want%3A%20" target="_blank" rel="noopener">
+            <strong>WhatsApp</strong><span>Message +960 763 7762</span>
+          </a>
+          <a class="reg-way" id="reg-instagram" href="#" target="_blank" rel="noopener" hidden>
+            <strong>Instagram</strong><span>Send us a message</span>
+          </a>
+          <a class="reg-way" href="#register">
+            <strong>Website</strong><span>Fill in the short form below</span>
+          </a>
         </div>
+        <p class="reg-phone">Call or WhatsApp: <a href="tel:+9607637762">+960 763 7762</a></p>
       </div>
     </section>
 
     <section id="register" class="section">
       <div class="container contact-grid">
         <div>
-          <h2>Your profile</h2>
+          <h2>Register on the website</h2>
+          <p class="section-lead">Only your name and phone number are needed. Add more if you like.</p>
           <form class="contact-form" id="register-form" data-endpoint="/api/register" data-success="Thank you! You're registered. We'll contact you on WhatsApp or phone when a matching job opens." novalidate>
-            <h3 class="form-section">1. About you</h3>
-            <label>Full name *<input name="name" required maxlength="120" placeholder="As shown on your passport"></label>
             <div class="form-row">
-              <label>Date of birth *<input name="dob" type="date" required min="1950-01-01" max="2010-12-31"></label>
-              <label>Gender
-                <select name="gender"><option value="">Select</option><option>Female</option><option>Male</option></select>
-              </label>
-            </div>
-            <div class="form-row">
-              <label>Home country *
-                <select name="country" required><option value="">Select</option><option>Bangladesh</option><option>India</option><option>Nepal</option><option>Sri Lanka</option><option>Philippines</option><option>Indonesia</option><option>Vietnam</option><option>Ethiopia</option><option>Other</option></select>
-              </label>
-              <label>Where are you now?
-                <select name="location">
-                  <option value="">Select</option><option>In the Maldives</option><option>In my home country</option><option>Somewhere else</option>
-                </select>
-              </label>
-            </div>
-
-            <h3 class="form-section">2. How to reach you</h3>
-            <div class="form-row">
+              <label>Full name *<input name="name" required maxlength="120" placeholder="As shown on your passport"></label>
               <label>Phone / WhatsApp *<input name="phone" type="tel" required maxlength="40" placeholder="Include country code"></label>
-              <label>Email<input name="email" type="email" maxlength="160" placeholder="you@example.com"></label>
-            </div>
-
-            <h3 class="form-section">3. Your work</h3>
-            <div class="form-row">
-              <label>Field
-                <select name="sector">
-                  <option value="">Select</option><option>Domestic (housemaid, nanny, cook, driver, caregiver)</option><option>Hospitality (resort, hotel, restaurant)</option>
-                  <option>Construction</option><option>Retail &amp; office</option><option>Fishing &amp; marine</option><option>Other</option>
-                </select>
-              </label>
-              <label>Job you want *<input name="role" required maxlength="120" placeholder="e.g. Housemaid, Chef, Mason"></label>
             </div>
             <div class="form-row">
-              <label>Years of experience
-                <select name="experience">
-                  <option value="">Select</option><option>Less than 1 year</option><option>1 to 3 years</option>
-                  <option>3 to 5 years</option><option>5 to 10 years</option><option>More than 10 years</option>
-                </select>
-              </label>
-              <label>Languages you speak<input name="languages" maxlength="200" placeholder="e.g. English, Bangla, Hindi"></label>
-            </div>
-            <div class="form-row">
-              <label>Passport
-                <select name="passport">
-                  <option value="">Select</option><option>Valid for 6+ months</option><option>Valid for less than 6 months</option><option>I don't have one yet</option>
-                </select>
-              </label>
-              <label>When can you start?
-                <select name="available">
-                  <option value="">Select</option><option>Immediately</option><option>Within 1 month</option><option>Within 3 months</option><option>Later</option>
-                </select>
+              <label>Job you want<input name="role" maxlength="120" placeholder="e.g. Housemaid, Chef, Mason"></label>
+              <label>Home country
+                <select name="country"><option value="">Select</option><option>Bangladesh</option><option>India</option><option>Nepal</option><option>Sri Lanka</option><option>Philippines</option><option>Indonesia</option><option>Vietnam</option><option>Ethiopia</option><option>Other</option></select>
               </label>
             </div>
-            <label>Skills and past jobs<textarea name="skills" rows="3" maxlength="2000" placeholder="Where you worked before, what you can do, certificates"></textarea></label>
+            <details class="more">
+              <summary>Add more details (optional)</summary>
+              <div class="more-body">
+                <div class="form-row">
+                  <label>Date of birth<input name="dob" type="date" min="1950-01-01" max="2010-12-31"></label>
+                  <label>Gender
+                    <select name="gender"><option value="">Select</option><option>Female</option><option>Male</option></select>
+                  </label>
+                </div>
+                <div class="form-row">
+                  <label>Email<input name="email" type="email" maxlength="160" placeholder="you@example.com"></label>
+                  <label>Where are you now?
+                    <select name="location">
+                      <option value="">Select</option><option>In the Maldives</option><option>In my home country</option><option>Somewhere else</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="form-row">
+                  <label>Field
+                    <select name="sector">
+                      <option value="">Select</option><option>Domestic (housemaid, nanny, cook, driver, caregiver)</option><option>Hospitality (resort, hotel, restaurant)</option>
+                      <option>Construction</option><option>Retail &amp; office</option><option>Fishing &amp; marine</option><option>Other</option>
+                    </select>
+                  </label>
+                  <label>Years of experience
+                    <select name="experience">
+                      <option value="">Select</option><option>Less than 1 year</option><option>1 to 3 years</option>
+                      <option>3 to 5 years</option><option>5 to 10 years</option><option>More than 10 years</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="form-row">
+                  <label>Passport
+                    <select name="passport">
+                      <option value="">Select</option><option>Valid for 6+ months</option><option>Valid for less than 6 months</option><option>I don't have one yet</option>
+                    </select>
+                  </label>
+                  <label>When can you start?
+                    <select name="available">
+                      <option value="">Select</option><option>Immediately</option><option>Within 1 month</option><option>Within 3 months</option><option>Later</option>
+                    </select>
+                  </label>
+                </div>
+                <label>Languages you speak<input name="languages" maxlength="200" placeholder="e.g. English, Bangla, Hindi"></label>
+                <label>Skills and past jobs<textarea name="skills" rows="3" maxlength="2000" placeholder="Where you worked before, what you can do, certificates"></textarea></label>
+              </div>
+            </details>
             <label>CV or photo (PDF, Word or photo, max 3 MB)<input name="cv" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,image/*"></label>
             <label class="consent"><input type="checkbox" name="consent" required> I agree that MVEC may keep my details and share them with employers in the Maldives for job offers. *</label>
             <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-            <p class="form-hint">Fields marked * are required.</p>
+            <p class="form-hint">Fields marked * are required. We will contact you on this number.</p>
             <button class="btn" type="submit">Register</button>
             <p class="form-status" role="status" aria-live="polite"></p>
           </form>
@@ -133,11 +142,17 @@
             <li><span><strong>We handle the paperwork</strong>If you accept, we arrange the quota, work permit and visa with the employer.</span></li>
           </ol>
           <p class="no-fee"><strong>No upfront fees.</strong> Registering is free and we never ask job seekers for money to apply. If anyone asks you to pay in MVEC's name, tell us.</p>
-          <a class="btn btn-block" href="https://wa.me/9607637762?text=Hi%20MVEC%2C%20I%20want%20to%20register%20for%20a%20job." target="_blank" rel="noopener">Ask us on WhatsApp</a>
+          <p class="talk-phone">Call or WhatsApp<br><a href="tel:+9607637762">+960 763 7762</a></p>
+          <a class="btn btn-block" href="https://wa.me/9607637762?text=Hi%20MVEC%2C%20I%20want%20to%20register%20for%20a%20job.%0AName%3A%20%0ACountry%3A%20%0AJob%20I%20want%3A%20" target="_blank" rel="noopener">Register on WhatsApp</a>
         </aside>
       </div>
     </section>
   </main>
+
+  <script>
+    // Instagram button shows once MVEC's Instagram username is set here.
+    (function () { var IG = ''; var a = document.getElementById('reg-instagram'); if (IG && a) { a.href = 'https://ig.me/m/' + IG; a.hidden = false; } })();
+  </script>
 
   <footer class="site-footer">
     <div class="container">
