@@ -1,10 +1,7 @@
 // Job applications from the "Find a job" page, with an optional CV, go to the MVEC Telegram chat.
 import { clip, esc, isEmail, readBody, sendDocument, sendMessage } from '../lib/telegram.js';
+import { readUpload } from '../lib/files.js';
 
-const MAX_CV_BYTES = 3 * 1024 * 1024; // Vercel request bodies are capped at 4.5 MB
-const ALLOWED = { 'application/pdf': 'pdf', 'application/msword': 'doc',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-  'image/jpeg': 'jpg', 'image/png': 'png' };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -28,15 +25,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Please fill in all required fields.' });
   }
 
-  let cv = null;
-  if (body.cv && body.cv.data) {
-    const mime = clip(body.cv.type, 120);
-    if (!ALLOWED[mime]) return res.status(400).json({ error: 'CV must be a PDF, Word document or photo.' });
-    const buffer = Buffer.from(String(body.cv.data), 'base64');
-    if (buffer.length > MAX_CV_BYTES) return res.status(400).json({ error: 'CV file is too large (max 3 MB).' });
-    const safeName = clip(body.cv.name, 100).replace(/[^\w.\- ]+/g, '_') || `cv.${ALLOWED[mime]}`;
-    cv = { buffer, mime, name: safeName };
-  }
+  const up = readUpload(body.cv);
+  if (up.error) return res.status(400).json({ error: up.error });
+  const cv = up.file;
 
   const line = (label, v) => (v ? `<b>${label}:</b> ${esc(v)}` : null);
   const text = [

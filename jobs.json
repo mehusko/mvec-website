@@ -1,0 +1,9 @@
+{
+  "sample": true,
+  "note": "Example jobs. Staff replace these with real openings (the first job added on Telegram with /addjob clears the examples).",
+  "jobs": [
+    { "id": "J001", "title": "Housemaid", "sector": "Domestic", "place": "Malé", "type": "Full time", "pay": "USD 300 to 400 a month, with food and accommodation", "requirements": "2+ years housekeeping experience, basic English", "posted": "2026-11-13" },
+    { "id": "J002", "title": "Commis chef", "sector": "Hospitality", "place": "Resort, Baa Atoll", "type": "Full time", "pay": "USD 500 to 650 a month, plus service charge", "requirements": "Hotel or resort kitchen experience, English", "posted": "2026-11-13" },
+    { "id": "J003", "title": "Mason", "sector": "Construction", "place": "Hulhumalé", "type": "Contract (2 years)", "pay": "MVR 7,000 a month, with accommodation", "requirements": "3+ years building experience", "posted": "2026-11-13" }
+  ]
+}

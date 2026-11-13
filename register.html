@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register as a worker | MVEC</title>
+  <meta name="description" content="Register free with MVEC to work in the Maldives. Create your worker profile and we will contact you when a matching job opens. No upfront fees.">
+  <link rel="canonical" href="https://www.mvec.mv/register">
+  <meta property="og:title" content="Register as a worker | MVEC">
+  <meta property="og:description" content="Register free with MVEC to work in the Maldives. Create your worker profile and we will contact you when a matching job opens. No upfront fees.">
+  <meta name="theme-color" content="#0f2138">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&family=Noto+Sans+Bengali:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="/" class="brand" aria-label="MVEC home">
+        <span class="brand-mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg></span>
+        <span class="brand-text">mvec</span>
+        <span class="brand-sub">Maldives Employment<em>Consultancy</em></span>
+      </a>
+      <button class="nav-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
+      <nav class="nav-links">
+        <div class="nav-main">
+          <a href="/#services">Services</a>
+          <a href="/workers">Browse workers</a>
+          <a href="/safety">Safety &amp; vetting</a>
+          <a href="/about">About</a>
+          <a href="/contact">Contact</a>
+        </div>
+        <div class="nav-side">
+          <a href="/jobs" class="active">Find a job</a>
+          <a href="/quota">Apply for quota</a>
+          <a href="/contact" class="btn btn-small">Hire help</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/jobs">Find a job</a><span aria-hidden="true">/</span>Register</nav>
+        <p class="eyebrow">For job seekers</p>
+        <h1>Register as a <mark>worker</mark></h1>
+        <p class="lead">Registering is free and takes one minute. Send us your name and phone number in the way that is easiest for you, and we'll contact you when a matching job opens.</p>
+        <div class="reg-ways">
+          <a class="reg-way" href="https://wa.me/9607637762?text=Hi%20MVEC%2C%20I%20want%20to%20register%20for%20a%20job.%0AName%3A%20%0ACountry%3A%20%0AJob%20I%20want%3A%20" target="_blank" rel="noopener">
+            <strong>WhatsApp</strong><span>Message +960 763 7762</span>
+          </a>
+          <a class="reg-way" id="reg-instagram" href="#" target="_blank" rel="noopener" hidden>
+            <strong>Instagram</strong><span>Send us a message</span>
+          </a>
+          <a class="reg-way" href="#register">
+            <strong>Website</strong><span>Fill in the short form below</span>
+          </a>
+        </div>
+        <p class="reg-phone">Call or WhatsApp: <a href="tel:+9607637762">+960 763 7762</a></p>
+      </div>
+    </section>
+
+    <section id="register" class="section">
+      <div class="container contact-grid">
+        <div>
+          <h2>Register on the website</h2>
+          <p class="section-lead">Only your name and phone number are needed. Add more if you like.</p>
+          <form class="contact-form" id="register-form" data-endpoint="/api/register" data-success="Thank you! You're registered. We'll contact you on WhatsApp or phone when a matching job opens." novalidate>
+            <div class="form-row">
+              <label>Full name *<input name="name" required maxlength="120" placeholder="As shown on your passport"></label>
+              <label>Phone / WhatsApp *<input name="phone" type="tel" required maxlength="40" placeholder="Include country code"></label>
+            </div>
+            <div class="form-row">
+              <label>Job you want<input name="role" maxlength="120" placeholder="e.g. Housemaid, Chef, Mason"></label>
+              <label>Home country
+                <select name="country"><option value="">Select</option><option>Bangladesh</option><option>India</option><option>Nepal</option><option>Sri Lanka</option><option>Philippines</option><option>Indonesia</option><option>Vietnam</option><option>Ethiopia</option><option>Other</option></select>
+              </label>
+            </div>
+            <details class="more">
+              <summary>Add more details (optional)</summary>
+              <div class="more-body">
+                <div class="form-row">
+                  <label>Date of birth<input name="dob" type="date" min="1950-01-01" max="2010-12-31"></label>
+                  <label>Gender
+                    <select name="gender"><option value="">Select</option><option>Female</option><option>Male</option></select>
+                  </label>
+                </div>
+                <div class="form-row">
+                  <label>Email<input name="email" type="email" maxlength="160" placeholder="you@example.com"></label>
+                  <label>Where are you now?
+                    <select name="location">
+                      <option value="">Select</option><option>In the Maldives</option><option>In my home country</option><option>Somewhere else</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="form-row">
+                  <label>Field
+                    <select name="sector">
+                      <option value="">Select</option><option>Domestic (housemaid, nanny, cook, driver, caregiver)</option><option>Hospitality (resort, hotel, restaurant)</option>
+                      <option>Construction</option><option>Retail &amp; office</option><option>Fishing &amp; marine</option><option>Other</option>
+                    </select>
+                  </label>
+                  <label>Years of experience
+                    <select name="experience">
+                      <option value="">Select</option><option>Less than 1 year</option><option>1 to 3 years</option>
+                      <option>3 to 5 years</option><option>5 to 10 years</option><option>More than 10 years</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="form-row">
+                  <label>Passport
+                    <select name="passport">
+                      <option value="">Select</option><option>Valid for 6+ months</option><option>Valid for less than 6 months</option><option>I don't have one yet</option>
+                    </select>
+                  </label>
+                  <label>When can you start?
+                    <select name="available">
+                      <option value="">Select</option><option>Immediately</option><option>Within 1 month</option><option>Within 3 months</option><option>Later</option>
+                    </select>
+                  </label>
+                </div>
+                <label>Languages you speak<input name="languages" maxlength="200" placeholder="e.g. English, Bangla, Hindi"></label>
+                <label>Skills and past jobs<textarea name="skills" rows="3" maxlength="2000" placeholder="Where you worked before, what you can do, certificates"></textarea></label>
+              </div>
+            </details>
+            <label>CV or photo (PDF, Word or photo, max 3 MB)<input name="cv" type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,image/*"></label>
+            <label class="consent"><input type="checkbox" name="consent" required> I agree that MVEC may keep my details and share them with employers in the Maldives for job offers. *</label>
+            <input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <p class="form-hint">Fields marked * are required. We will contact you on this number.</p>
+            <button class="btn" type="submit">Register</button>
+            <p class="form-status" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+        <aside class="talk-card">
+          <h3>What happens next</h3>
+          <ol class="next-steps">
+            <li><span><strong>We check your profile</strong>Our team reads every registration and may call you to ask a few questions.</span></li>
+            <li><span><strong>We match you with a job</strong>When an employer needs your skills, we send you the job, the pay and the conditions.</span></li>
+            <li><span><strong>We handle the paperwork</strong>If you accept, we arrange the quota, work permit and visa with the employer.</span></li>
+          </ol>
+          <p class="no-fee"><strong>No upfront fees.</strong> Registering is free and we never ask job seekers for money to apply. If anyone asks you to pay in MVEC's name, tell us.</p>
+          <p class="talk-phone">Call or WhatsApp<br><a href="tel:+9607637762">+960 763 7762</a></p>
+          <a class="btn btn-block" href="https://wa.me/9607637762?text=Hi%20MVEC%2C%20I%20want%20to%20register%20for%20a%20job.%0AName%3A%20%0ACountry%3A%20%0AJob%20I%20want%3A%20" target="_blank" rel="noopener">Register on WhatsApp</a>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Instagram button shows once MVEC's Instagram username is set here.
+    (function () { var IG = ''; var a = document.getElementById('reg-instagram'); if (IG && a) { a.href = 'https://ig.me/m/' + IG; a.hidden = false; } })();
+  </script>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© <span id="year"></span> MVEC, Maldives Employment Consultant. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="/assets/i18n.js"></script>
+  <script src="/assets/site.js" defer></script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
