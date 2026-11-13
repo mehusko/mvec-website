@@ -1,6 +1,7 @@
 // Job applications from the "Find a job" page, with an optional CV, go to the MVEC Telegram chat.
 import { clip, esc, isEmail, readBody, sendDocument, sendMessage } from '../lib/telegram.js';
 import { readUpload } from '../lib/files.js';
+import { saveRecord } from '../lib/records.js';
 
 
 export default async function handler(req, res) {
@@ -45,6 +46,8 @@ export default async function handler(req, res) {
     cv ? '' : null,
     cv ? null : '<i>No CV attached</i>',
   ].filter((l) => l !== null).join('\n');
+
+  await saveRecord('application', { ...f, file: cv ? cv.name : '' });
 
   try {
     if (cv && text.length <= 1000) await sendDocument(cv.buffer, cv.name, cv.mime, text);

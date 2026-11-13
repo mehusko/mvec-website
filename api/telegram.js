@@ -1,7 +1,7 @@
 // Telegram bot webhook: the Mvec bot answers clients who message it privately, using AI.
 // Each private question and answer is copied to the MVEC group (TELEGRAM_CHAT_ID).
 // Messages inside groups are ignored, so the team can talk freely.
-// Staff commands (/jobs, /addjob, /closejob, /help) work only from the MVEC chat
+// Staff commands (/jobs, /addjob, /closejob, /registrations, /help) work only from the MVEC chat
 // (TELEGRAM_CHAT_ID) or from people listed in TELEGRAM_ADMIN_IDS. See lib/jobs.js.
 // Env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_WEBHOOK_SECRET, ANTHROPIC_API_KEY,
 //      TELEGRAM_ADMIN_IDS (optional, comma separated user ids), BLOB_READ_WRITE_TOKEN (jobs store).
@@ -12,6 +12,7 @@
 import { esc, readBody, sendMessage } from '../lib/telegram.js';
 import { aiReady, askAI } from '../lib/ai.js';
 import { loadJobs, nextId, parseJob, saveJobs, storeReady } from '../lib/jobs.js';
+import { loadRecords, recordsReady, toCsv } from '../lib/records.js';
 
 const api = (method, payload) =>
   fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/${method}`, {
@@ -41,7 +42,7 @@ export default async function handler(req, res) {
   if (!secret || req.headers['x-telegram-bot-api-secret-token'] !== secret) return res.status(403).end();
 
   const msg = readBody(req).message;
-  if (msg && msg.chat && msg.text && isStaff(msg) && /^\/(jobs|addjob|closejob|help)(@\w+)?\b/i.test(msg.text.trim())) {
+  if (msg && msg.chat && msg.text && isStaff(msg) && /^\/(jobs|addjob|closejob|help|registrations)(@\w+)?\b/i.test(msg.text.trim())) {
     try { await staffCommand(msg); }
     catch (err) {
       console.error('Staff command:', err.message);
@@ -109,6 +110,9 @@ const JOB_HELP = [
   'Requirements: 2 years resort kitchen, English',
   '',
   'Only Title is required. Sector can be Domestic, Hospitality, Construction, Retail & office or anything else.',
+  '',
+  'Workers who registered or applied on the website:',
+  '/registrations  sends the full list as a spreadsheet (opens in Excel or Google Sheets)',
 ].join('\n');
 
 const jobLine = (j) => `${j.id}  ${j.title}${j.place ? ' · ' + j.place : ''}${j.pay ? ' · ' + j.pay : ''}`;
@@ -120,6 +124,7 @@ async function staffCommand(msg) {
   const reply = (t) => api('sendMessage', { chat_id: chatId, text: t, disable_web_page_preview: true });
 
   if (cmd === 'help') return reply(JOB_HELP);
+  if (cmd === 'registrations') return sendRegistrations(chatId, reply);
 
   const data = await loadJobs();
   const open = (data.jobs || []).filter((j) => !j.closed);
@@ -150,4 +155,20 @@ async function staffCommand(msg) {
     await saveJobs({ jobs: data.jobs.filter((j) => j !== job) });
     return reply(`Removed ${jobLine(job)}`);
   }
+}
+
+async function sendRegistrations(chatId, reply) {
+  if (!recordsReady()) return reply('Saving registrations is not set up yet (needs the Blob store and DATA_ENCRYPTION_KEY in Vercel).');
+  await api('sendChatAction', { chat_id: chatId, action: 'upload_document' });
+  const records = await loadRecords();
+  if (!records.length) return reply('No registrations or job applications saved yet. New ones from the website are saved from now on.');
+  const week = Date.now() - 7 * 864e5;
+  const recent = records.filter((r) => Date.parse(r.at) > week).length;
+  const regs = records.filter((r) => r.kind === 'registration').length;
+  const form = new FormData();
+  form.append('chat_id', String(chatId));
+  form.append('caption', `${records.length} in total: ${regs} registrations, ${records.length - regs} job applications. ${recent} in the last 7 days. Newest first.`);
+  form.append('document', new Blob([toCsv(records)], { type: 'text/csv' }), `mvec-workers-${new Date().toISOString().slice(0, 10)}.csv`);
+  const r = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendDocument`, { method: 'POST', body: form });
+  if (!r.ok) throw new Error('Telegram ' + r.status);
 }

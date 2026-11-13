@@ -2,6 +2,7 @@
 // goes to the MVEC Telegram chat.
 import { clip, esc, isEmail, readBody, sendDocument, sendMessage } from '../lib/telegram.js';
 import { readUpload } from '../lib/files.js';
+import { saveRecord } from '../lib/records.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -59,6 +60,8 @@ export default async function handler(req, res) {
     file ? null : '',
     file ? null : '<i>No CV or photo attached</i>',
   ].filter((l) => l !== null).join('\n');
+
+  await saveRecord('registration', { ...f, file: file ? file.name : '' });
 
   try {
     if (file && text.length <= 1000) await sendDocument(file.buffer, file.name, file.mime, text);
