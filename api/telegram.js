@@ -1,13 +1,17 @@
 // Telegram bot webhook: the Mvec bot answers clients who message it privately, using AI.
 // Each private question and answer is copied to the MVEC group (TELEGRAM_CHAT_ID).
 // Messages inside groups are ignored, so the team can talk freely.
-// Env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_WEBHOOK_SECRET, ANTHROPIC_API_KEY.
+// Staff commands (/jobs, /addjob, /closejob, /help) work only from the MVEC chat
+// (TELEGRAM_CHAT_ID) or from people listed in TELEGRAM_ADMIN_IDS. See lib/jobs.js.
+// Env: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_WEBHOOK_SECRET, ANTHROPIC_API_KEY,
+//      TELEGRAM_ADMIN_IDS (optional, comma separated user ids), BLOB_READ_WRITE_TOKEN (jobs store).
 //
 // Setup (once): send a request with header  x-setup-key: <TELEGRAM_WEBHOOK_SECRET>
 //   GET  /api/telegram  -> current webhook info
 //   PUT  /api/telegram  -> points the bot's webhook at this endpoint
 import { esc, readBody, sendMessage } from '../lib/telegram.js';
 import { aiReady, askAI } from '../lib/ai.js';
+import { loadJobs, nextId, parseJob, saveJobs, storeReady } from '../lib/jobs.js';
 
 const api = (method, payload) =>
   fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/${method}`, {
@@ -37,6 +41,14 @@ export default async function handler(req, res) {
   if (!secret || req.headers['x-telegram-bot-api-secret-token'] !== secret) return res.status(403).end();
 
   const msg = readBody(req).message;
+  if (msg && msg.chat && msg.text && isStaff(msg) && /^\/(jobs|addjob|closejob|help)(@\w+)?\b/i.test(msg.text.trim())) {
+    try { await staffCommand(msg); }
+    catch (err) {
+      console.error('Staff command:', err.message);
+      await api('sendMessage', { chat_id: msg.chat.id, text: 'Sorry, that did not work: ' + err.message }).catch(() => {});
+    }
+    return res.status(200).end();
+  }
   // Only private chats with text; always answer Telegram with 200 so it doesn't retry.
   if (!msg || !msg.chat || msg.chat.type !== 'private' || !msg.text) return res.status(200).end();
 
@@ -71,4 +83,71 @@ export default async function handler(req, res) {
     await api('sendMessage', { chat_id: chatId, text: 'Sorry, I could not answer just now. Please WhatsApp us on +960 763 7762.' }).catch(() => {});
   }
   return res.status(200).end();
+}
+
+// ---- Staff commands for open jobs ----
+
+function isStaff(msg) {
+  const chat = String(process.env.TELEGRAM_CHAT_ID || '');
+  const admins = String(process.env.TELEGRAM_ADMIN_IDS || '').split(',').map((x) => x.trim()).filter(Boolean);
+  return (chat && String(msg.chat.id) === chat) || (msg.from && admins.includes(String(msg.from.id)));
+}
+
+const JOB_HELP = [
+  'Open jobs on the website (mvec.mv/jobs):',
+  '',
+  '/jobs  shows the current list',
+  '/closejob J004  removes a job',
+  '/addjob  adds a job. Send it like this:',
+  '',
+  '/addjob',
+  'Title: Commis chef',
+  'Place: Resort, Baa Atoll',
+  'Type: Full time',
+  'Pay: USD 600 a month + food and room',
+  'Sector: Hospitality',
+  'Requirements: 2 years resort kitchen, English',
+  '',
+  'Only Title is required. Sector can be Domestic, Hospitality, Construction, Retail & office or anything else.',
+].join('\n');
+
+const jobLine = (j) => `${j.id}  ${j.title}${j.place ? ' · ' + j.place : ''}${j.pay ? ' · ' + j.pay : ''}`;
+
+async function staffCommand(msg) {
+  const chatId = msg.chat.id;
+  const text = String(msg.text).trim().slice(0, 3000);
+  const cmd = text.match(/^\/(\w+)/)[1].toLowerCase();
+  const reply = (t) => api('sendMessage', { chat_id: chatId, text: t, disable_web_page_preview: true });
+
+  if (cmd === 'help') return reply(JOB_HELP);
+
+  const data = await loadJobs();
+  const open = (data.jobs || []).filter((j) => !j.closed);
+  if (cmd === 'jobs') {
+    if (!open.length) return reply('No open jobs on the website right now. Add one with /addjob (send /help for the format).');
+    return reply((data.sample ? 'These are the EXAMPLE jobs. The first /addjob replaces them.\n\n' : 'Open jobs on the website:\n\n') + open.map(jobLine).join('\n'));
+  }
+
+  if (!storeReady()) return reply('Job storage is not connected yet, so I cannot change the list. Ask your web person to connect a Vercel Blob store to the mvec-website project.');
+
+  if (cmd === 'addjob') {
+    const job = parseJob(text);
+    if (!job) return reply('I need at least a title.\n\n' + JOB_HELP);
+    const jobs = data.sample ? [] : data.jobs || [];
+    job.id = nextId(jobs);
+    job.posted = new Date().toISOString().slice(0, 10);
+    jobs.push(job);
+    await saveJobs({ jobs });
+    return reply(`Added ${jobLine(job)}\n\nIt shows on mvec.mv/jobs within a minute. Remove it later with /closejob ${job.id}`);
+  }
+
+  if (cmd === 'closejob') {
+    const id = (text.split(/\s+/)[1] || '').toUpperCase();
+    if (!id) return reply('Which job? For example: /closejob J004. Send /jobs to see the numbers.');
+    if (data.sample) return reply('The website still shows example jobs. Add a real job with /addjob and the examples go away.');
+    const job = (data.jobs || []).find((j) => String(j.id).toUpperCase() === id);
+    if (!job) return reply(`No job ${id}. Send /jobs to see the list.`);
+    await saveJobs({ jobs: data.jobs.filter((j) => j !== job) });
+    return reply(`Removed ${jobLine(job)}`);
+  }
 }

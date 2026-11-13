@@ -1,5 +1,8 @@
 {
   "name": "mvec-website",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@vercel/blob": "2.8.2"
+  }
 }

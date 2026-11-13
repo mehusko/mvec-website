@@ -4,10 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Find a job in the Maldives | MVEC</title>
-  <meta name="description" content="Looking for work in the Maldives? Send MVEC your details and CV and we will contact you when a suitable job opens.">
+  <meta name="description" content="Open jobs in the Maldives from MVEC: housemaids, resort staff, construction and more. See pay and requirements and apply with your CV.">
   <link rel="canonical" href="https://www.mvec.mv/jobs">
   <meta property="og:title" content="Find a job in the Maldives | MVEC">
-  <meta property="og:description" content="Looking for work in the Maldives? Send MVEC your details and CV and we will contact you when a suitable job opens.">
+  <meta property="og:description" content="Open jobs in the Maldives from MVEC: housemaids, resort staff, construction and more. See pay and requirements and apply with your CV.">
   <meta name="theme-color" content="#0f2138">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,10 +48,23 @@
         <p class="eyebrow">For job seekers</p>
         <h1>Find a job in the <mark>Maldives</mark></h1>
         <p class="lead">We place staff with resorts, construction companies, shops and offices across the Maldives. Send us your details and CV, and we'll contact you when a suitable job opens.</p>
+        <div class="hero-actions">
+          <a href="#open-jobs" class="btn">See open jobs <span aria-hidden="true">→</span></a>
+          <a href="/register" class="btn btn-ghost btn-light">Register as a worker</a>
+        </div>
       </div>
     </section>
 
-    <section class="section">
+    <section id="open-jobs" class="section alt">
+      <div class="container">
+        <h2>Open jobs</h2>
+        <p class="section-lead">Jobs we are hiring for right now. Pick one and apply, or register so we can match you with the next one.</p>
+        <p class="sample-note" id="jobs-sample" hidden>Example jobs for now. MVEC will add the real openings here.</p>
+        <div class="cards job-grid" id="job-grid" aria-live="polite"><p>Loading jobs…</p></div>
+      </div>
+    </section>
+
+    <section id="apply" class="section">
       <div class="container contact-grid">
         <div>
           <h2>Apply now</h2>
@@ -99,6 +112,32 @@
       </div>
     </section>
   </main>
+
+  <script>
+    (function () {
+      var grid = document.getElementById('job-grid');
+      function esc(s) { return String(s || '').replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+      function row(label, v) { return v ? '<dt>' + label + '</dt><dd data-no-i18n>' + esc(v) + '</dd>' : ''; }
+      fetch('/api/jobs').then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+        var jobs = d.jobs || [];
+        document.getElementById('jobs-sample').hidden = !d.sample;
+        grid.innerHTML = jobs.length ? jobs.map(function (j) {
+          return '<article class="card worker job">' +
+            '<div><h3 data-no-i18n>' + esc(j.title) + '</h3>' + (j.sector ? '<span class="tag" data-no-i18n>' + esc(j.sector) + '</span>' : '') + '</div>' +
+            '<dl>' + row('Place', j.place) + row('Type', j.type) + row('Pay', j.pay) + row('Requirements', j.requirements) + '</dl>' +
+            '<button class="btn btn-small" data-apply="' + esc(j.title + ' (' + j.id + ')') + '">Apply for this job</button></article>';
+        }).join('') : '<p>No open jobs right now. Register below and we\'ll contact you when one opens.</p>';
+      }).catch(function () { grid.innerHTML = '<p>Could not load the jobs. You can still apply below.</p>'; });
+      document.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-apply]');
+        if (!b) return;
+        var input = document.querySelector('#apply-form [name=role]');
+        input.value = b.dataset.apply;
+        document.getElementById('apply').scrollIntoView({ behavior: 'smooth' });
+        setTimeout(function () { input.focus(); }, 400);
+      });
+    })();
+  </script>
 
   <footer class="site-footer">
     <div class="container">
