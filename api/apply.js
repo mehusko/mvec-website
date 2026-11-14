@@ -2,6 +2,7 @@
 import { clip, esc, isEmail, readBody, sendDocument, sendMessage } from '../lib/telegram.js';
 import { readUpload } from '../lib/files.js';
 import { saveRecord } from '../lib/records.js';
+import { saveFormRecord } from '../lib/admin.js';
 
 
 export default async function handler(req, res) {
@@ -47,6 +48,7 @@ export default async function handler(req, res) {
     cv ? null : '<i>No CV attached</i>',
   ].filter((l) => l !== null).join('\n');
 
+  await saveFormRecord('applications', { ...f, country: f.nationality, notes: f.message });
   await saveRecord('application', { ...f, file: cv ? cv.name : '' });
 
   try {

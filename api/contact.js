@@ -1,5 +1,6 @@
 // Website inquiries (contact form and worker requests) go to the MVEC Telegram chat.
 import { clip, esc, isEmail, readBody, sendMessage } from '../lib/telegram.js';
+import { saveFormRecord } from '../lib/admin.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -40,6 +41,8 @@ export default async function handler(req, res) {
     f.message ? '' : null,
     f.message ? esc(f.message) : null,
   ].filter((l) => l !== null).join('\n');
+
+  await saveFormRecord('inquiries', f); // admin panel copy; never blocks the form
 
   try {
     await sendMessage(text);
