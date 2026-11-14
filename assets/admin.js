@@ -143,7 +143,15 @@
       const t = await api('GET', `e/${key}?format=csv${state.q ? '&q=' + encodeURIComponent(state.q) : ''}${state.status ? '&status=' + state.status : ''}`);
       const a = h('a', { href: URL.createObjectURL(new Blob([t], { type: 'text/csv' })), download: key + '.csv' }); a.click();
     } }, 'Download CSV');
-    const bar = h('div', { class: 'bar' }, search, sel, h('button', { class: 'btn ghost', onclick: again }, 'Search'), csvBtn, def.canManage && h('button', { class: 'btn', onclick: () => form(box, key) }, '+ New'));
+    const fileIn = h('input', { type: 'file', accept: '.json', style: 'display:none', onchange: async (e) => {
+      try {
+        const j = JSON.parse(await e.target.files[0].text());
+        if (j.entity !== key) throw new Error(`This file is for "${j.entity}", not ${def.label}.`);
+        const r = await api('POST', `e/${key}/import`, { rows: j.rows });
+        alert(`Imported ${r.added} records (${r.skipped} were already there).`); again();
+      } catch (x) { alert(x.message); }
+    } });
+    const bar = h('div', { class: 'bar' }, search, sel, h('button', { class: 'btn ghost', onclick: again }, 'Search'), csvBtn, def.canManage && h('button', { class: 'btn ghost', onclick: () => fileIn.click() }, 'Import file'), fileIn, def.canManage && h('button', { class: 'btn', onclick: () => form(box, key) }, '+ New'));
     const cols = def.list.map((c) => c);
     const label = (c) => (def.fields.find((f) => f.key === c) || {}).label || (c === 'created_at' ? 'Received' : c === 'progress' ? 'Progress' : nice(c));
     const cell = (row, c) => {
@@ -228,10 +236,16 @@
       h('tbody', {}, ...r.rows.map((x) => h('tr', { style: 'cursor:default' }, h('td', {}, String(x.at).replace('T', ' ').slice(0, 19)), h('td', {}, x.email || ''), h('td', {}, x.action), h('td', {}, x.entity || ''), h('td', {}, x.detail || ''), h('td', {}, x.ip || '')))))));
   }
   async function users(box) {
-    const [u, ro] = await Promise.all([api('GET', 'users'), api('GET', 'roles')]); const msg = h('div');
+    const [u, ro, cl, wk] = await Promise.all([api('GET', 'users'), api('GET', 'roles'), api('GET', 'e/clients?page=1'), api('GET', 'e/workers?page=1')]); const msg = h('div');
     const f = { name: h('input', { placeholder: 'Name' }), email: h('input', { type: 'email', placeholder: 'Email' }), pw: h('input', { type: 'text', placeholder: 'Starting password (8+)' }),
-      role: h('select', {}, ...ro.roles.map((r) => h('option', { value: r.name }, r.label))) };
-    const add = h('button', { class: 'btn', onclick: async () => { try { await api('POST', 'users', { name: f.name.value, email: f.email.value, password: f.pw.value, role: f.role.value }); users(box); } catch (e) { say(msg, e.message, true); } } }, 'Add user');
+      role: h('select', {}, ...ro.roles.map((r) => h('option', { value: r.name }, r.label))), link: h('select', { style: 'display:none' }) };
+    const fillLink = () => {
+      const list = f.role.value === 'client' ? cl.rows : f.role.value === 'staff' ? wk.rows : null;
+      f.link.style.display = list ? '' : 'none';
+      f.link.replaceChildren(h('option', { value: '' }, f.role.value === 'client' ? '— which client? —' : '— which worker? —'), ...(list || []).map((r) => h('option', { value: r.id }, r.data.name)));
+    };
+    f.role.addEventListener('change', fillLink);
+    const add = h('button', { class: 'btn', onclick: async () => { try { await api('POST', 'users', { name: f.name.value, email: f.email.value, password: f.pw.value, role: f.role.value, linked_id: f.link.value || null }); users(box); } catch (e) { say(msg, e.message, true); } } }, 'Add user');
     const rows = u.rows.map((x) => {
       const role = h('select', { onchange: (e) => api('PUT', `users/${x.id}`, { role: e.target.value }).then(() => say(msg, 'Saved.')).catch((er) => say(msg, er.message, true)) },
         ...ro.roles.map((r) => h('option', { value: r.name, selected: r.name === x.role }, r.label)));
@@ -240,7 +254,7 @@
           h('button', { class: 'btn ghost sm', onclick: async () => { const p = prompt('New password for ' + x.email + ' (8+ characters)'); if (p) { try { await api('PUT', `users/${x.id}`, { password: p }); say(msg, 'Password changed.'); } catch (e) { say(msg, e.message, true); } } } }, 'New password'), ' ',
           h('button', { class: 'btn ghost sm', onclick: async () => { if (confirm('Reset 2-step code? They must set it up again on next sign-in.')) { await api('POST', `users/${x.id}/reset2fa`, {}); users(box); } } }, 'Reset 2-step')));
     });
-    box.replaceChildren(msg, h('div', { class: 'card' }, h('b', {}, 'Add a staff member'), h('div', { class: 'form' }, f.name, f.email, f.pw, f.role), h('p', {}, add)),
+    box.replaceChildren(msg, h('div', { class: 'card' }, h('b', {}, 'Add a staff member'), h('div', { class: 'form' }, f.name, f.email, f.pw, f.role, f.link), h('p', {}, add)),
       h('div', { class: 'wrap', style: 'margin-top:14px' }, h('table', {}, h('thead', {}, h('tr', {}, ...['Name', 'Email', 'Role', '2-step', 'Last sign-in', ''].map((c) => h('th', {}, c)))), h('tbody', {}, ...rows))));
   }
   async function settings(box) {
@@ -256,8 +270,53 @@
     api('POST', 'auth/password', { current: cur, password: nw }).then(() => alert('Password changed.')).catch((e) => alert(e.message));
   }
 
+
+  // ---------- Client and staff portal ----------
+  async function portalScreen() {
+    let d; try { d = await api('GET', 'portal/home'); } catch (e) { return app.replaceChildren(h('div', { class: 'login' }, h('h1', {}, 'MVEC Portal'), h('div', { class: 'msg err' }, e.message), h('p', {}, h('button', { class: 'btn ghost', onclick: async () => { await api('POST', 'auth/logout', {}); loginScreen(); } }, 'Sign out')))); }
+    const tabs = d.kind === 'client' ? ['Dashboard', 'My staff', 'Invoices', 'Schedules', 'Profile'] : ['Dashboard', 'Schedules', 'Attendance', 'Pay slips', 'Documents', 'Profile'];
+    let tab = tabs[0];
+    const table = (cols, rows, empty) => h('div', { class: 'wrap' }, h('table', {}, h('thead', {}, h('tr', {}, ...cols.map((c) => h('th', {}, c[0])))),
+      h('tbody', {}, ...(rows.length ? rows.map((r) => h('tr', { style: 'cursor:default' }, ...cols.map((c) => h('td', {}, c[2] ? c[2](r[c[1]]) : r[c[1]] ?? '')))) : [h('tr', {}, h('td', { colspan: cols.length }, empty))]))));
+    const pill = (v) => h('span', { class: 'pill ' + pillClass(v) }, nice(v));
+    const views = {
+      'Dashboard': () => {
+        const box = h('div');
+        if (d.kind === 'client') {
+          if (!d.placements.length) box.append(h('p', {}, 'No hires in progress yet.'));
+          for (const p of d.placements) box.append(h('div', { class: 'card', style: 'margin-bottom:12px' }, h('b', {}, `${p.worker_name || 'Your hire'}${p.role ? ' — ' + p.role : ''}`), pill(p.status),
+            h('div', { class: 'steps' }, ...meta.tracker.map(([k, l]) => h('span', { class: 'step' + (p.steps[k] ? ' done' : '') }, p.steps[k] ? `${l}: ${p.steps[k]}` : l)))));
+          const due = d.invoices.filter((i) => ['sent', 'overdue'].includes(i.status));
+          box.append(h('div', { class: 'grid' }, h('div', { class: 'card stat' }, h('b', {}, d.staff.length), h('span', {}, 'Staff with you')), h('div', { class: 'card stat' }, h('b', {}, due.length), h('span', {}, 'Invoices to pay'))));
+        } else {
+          const up = d.schedules.filter((s) => s.date >= new Date().toISOString().slice(0, 10)).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 5);
+          box.append(h('h3', {}, 'Upcoming'), table([['Date', 'date'], ['Client', 'client_name'], ['From', 'start'], ['To', 'end']], up, 'Nothing scheduled.'));
+        }
+        return box;
+      },
+      'My staff': () => table([['Name', 'name'], ['Role', 'role'], ['Country', 'country']], d.staff, 'No staff yet.'),
+      'Invoices': () => table([['Number', 'number'], ['Description', 'description'], ['Total (MVR)', 'total', money], ['Due', 'due_date'], ['Status', 'status', pill]], d.invoices, 'No invoices.'),
+      'Schedules': () => table(d.kind === 'client' ? [['Date', 'date'], ['Worker', 'worker_name'], ['From', 'start'], ['To', 'end']] : [['Date', 'date'], ['Client', 'client_name'], ['From', 'start'], ['To', 'end']], d.schedules, 'Nothing scheduled.'),
+      'Attendance': () => table([['Date', 'date'], ['Hours', 'hours'], ['Status', 'status', pill]], d.attendance, 'No attendance yet.'),
+      'Pay slips': () => table([['Month', 'month'], ['Base', 'base', money], ['Bonus', 'bonus', money], ['Deductions', 'deductions', money], ['Net pay (MVR)', 'net', money], ['Status', 'status', pill]], d.payslips, 'No pay slips yet.'),
+      'Documents': () => table([['Document', 'name'], ['Type', 'type'], ['Expires', 'expires']], d.documents, 'No documents.'),
+      'Profile': () => {
+        const msg = h('div'); const phone = h('input', { value: d.profile.phone || '' }); const email = h('input', { value: d.profile.email || '' }); const addr = h('input', { value: d.profile.address || '' });
+        return h('div', { class: 'card' }, msg, h('p', {}, h('b', {}, d.profile.name || '')), h('div', { class: 'form' }, h('div', {}, h('label', {}, 'Phone'), phone), h('div', {}, h('label', {}, 'Email'), email), d.kind === 'client' && h('div', {}, h('label', {}, 'Address'), addr)),
+          h('p', {}, h('button', { class: 'btn', onclick: async () => { try { await api('PUT', 'portal/profile', { phone: phone.value, email: email.value, address: addr.value }); say(msg, 'Saved.'); } catch (e) { say(msg, e.message, true); } } }, 'Save')),
+          h('p', {}, h('button', { class: 'btn ghost', onclick: changePassword }, 'Change my password')));
+      },
+    };
+    const draw2 = () => {
+      const nav = h('div', { class: 'side' }, h('h2', {}, 'MVEC Portal'), ...tabs.map((t) => h('a', { class: t === tab ? 'on' : '', onclick: () => { tab = t; draw2(); } }, t)),
+        h('div', { class: 'grp' }, h('a', { onclick: async () => { await api('POST', 'auth/logout', {}); meta = null; loginScreen(); } }, `Sign out (${d.profile.name || meta.user.email})`)));
+      app.replaceChildren(h('div', { class: 'layout' }, nav, h('div', { class: 'main' }, h('div', { class: 'bar' }, h('h1', {}, tab)), views[tab]())));
+    };
+    draw2();
+  }
+
   async function start() {
-    try { meta = await api('GET', 'meta'); route = 'home'; draw(); } catch { loginScreen(); }
+    try { meta = await api('GET', 'meta'); route = 'home'; if (meta.portal) return portalScreen(); draw(); } catch { loginScreen(); }
   }
   start();
 })();

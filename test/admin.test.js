@@ -81,3 +81,45 @@ test('public contact form still answers when no database is set up', async () =>
   process.env.DB_FILE = saved;
   assert.equal(id, null);
 });
+
+const signIn = async (email, password) => {
+  const l = (await call('', 'POST', 'auth/login', { email, password })).json;
+  const s = await call('', 'POST', 'auth/2fa', { challenge: l.challenge, code: A.totp(l.secret) });
+  return s.cookie.split(';')[0];
+};
+test('portals: each login sees only its own records', async () => {
+  const mk = async (e, d, status) => (await call(cookie, 'POST', `e/${e}`, { data: d, status })).json.id;
+  const cA = await mk('clients', { name: 'Family A' }); const cB = await mk('clients', { name: 'Family B' });
+  const w = await mk('workers', { name: 'Rani', phone: '1' });
+  await mk('invoices', { client_id: cA, client_name: 'Family A', amount: 100 }, 'sent');
+  await mk('invoices', { client_id: cA, client_name: 'Family A', amount: 5 }, 'draft');
+  await mk('invoices', { client_id: cB, client_name: 'Family B', amount: 999 }, 'sent');
+  await mk('placements', { client_id: cA, worker_id: w, worker_name: 'Rani', quota_approved: '2026-11-01' }, 'in progress');
+  await mk('payroll', { worker_id: w, worker_name: 'Rani', month: '2026-10', base: 100 }, 'paid');
+  await mk('payroll', { worker_id: w, worker_name: 'Rani', month: '2026-11', base: 100 }, 'draft');
+  // a client login must be linked to a client record, a staff login to a worker
+  assert.equal((await call(cookie, 'POST', 'users', { email: 'x@b.mv', role: 'client', password: 'passw0rd!!', linked_id: w })).err, 400);
+  assert.equal((await call(cookie, 'POST', 'users', { email: 'x@b.mv', role: 'staff', password: 'passw0rd!!' })).err, 400);
+  await call(cookie, 'POST', 'users', { email: 'fam@b.mv', name: 'Fam', role: 'client', password: 'passw0rd!!', linked_id: cA });
+  await call(cookie, 'POST', 'users', { email: 'rani@b.mv', name: 'Rani', role: 'staff', password: 'passw0rd!!', linked_id: w });
+  const fam = await signIn('fam@b.mv', 'passw0rd!!'); const rani = await signIn('rani@b.mv', 'passw0rd!!');
+  const f = (await call(fam, 'GET', 'portal/home')).json;
+  assert.equal(f.kind, 'client'); assert.equal(f.invoices.length, 1); assert.equal(f.invoices[0].total, 100);
+  assert.equal(f.staff[0].name, 'Rani'); assert.equal(f.placements[0].steps.quota_approved, '2026-11-01');
+  assert.equal((await call(fam, 'GET', 'e/invoices')).err, 403);
+  assert.equal((await call(fam, 'GET', 'users')).err, 403);
+  assert.equal((await call(fam, 'GET', 'audit')).err, 403);
+  const r = (await call(rani, 'GET', 'portal/home')).json;
+  assert.equal(r.kind, 'staff'); assert.equal(r.payslips.length, 1); assert.equal(r.payslips[0].month, '2026-10');
+  assert.equal((await call(rani, 'GET', 'e/payroll')).err, 403);
+  assert.ok((await call(fam, 'PUT', 'portal/profile', { phone: '777', address: 'Male' })).json.ok);
+  assert.equal((await call(cookie, 'GET', `e/clients/${cA}`)).json.data.phone, '777');
+  assert.equal((await call(cookie, 'GET', 'portal/home')).err, 403); // admin is not a portal user
+});
+test('import is safe to repeat', async () => {
+  const rows = [{ status: 'archived', created_at: '2026-01-02T03:04:05Z', data: { old_id: 'abc123', name: 'Old Person', message: 'hi' } }];
+  assert.deepEqual((await call(cookie, 'POST', 'e/inquiries/import', { rows })).json, { added: 1, skipped: 0 });
+  assert.deepEqual((await call(cookie, 'POST', 'e/inquiries/import', { rows })).json, { added: 0, skipped: 1 });
+  const got = (await call(cookie, 'GET', 'e/inquiries', {}, { q: 'old person' })).json.rows[0];
+  assert.equal(got.status, 'archived'); assert.equal(got.created_at, '2026-01-02T03:04:05Z');
+});
