@@ -6,7 +6,7 @@ process.env.COOKIE_SECURE = '0';
 process.env.DB_FILE = ':memory:';
 const A = await import('../lib/auth.js');
 const { route, saveFormRecord } = await import('../lib/admin.js');
-const { one } = await import('../lib/db.js');
+const { one, query } = await import('../lib/db.js');
 
 const req = (cookie = '', headers = {}) => ({ headers: { cookie, host: 'x.test', ...headers }, socket: { remoteAddress: '1.1.1.1' } });
 const call = async (cookie, method, path, body = {}, q = {}, headers = {}) => {
@@ -84,7 +84,8 @@ test('public contact form still answers when no database is set up', async () =>
 
 const signIn = async (email, password) => {
   const l = (await call('', 'POST', 'auth/login', { email, password })).json;
-  const s = await call('', 'POST', 'auth/2fa', { challenge: l.challenge, code: A.totp(l.secret) });
+  const secret = l.secret || (await one('SELECT totp_secret FROM users WHERE email = ?', [email])).totp_secret;
+  const s = await call('', 'POST', 'auth/2fa', { challenge: l.challenge, code: A.totp(secret) });
   return s.cookie.split(';')[0];
 };
 test('portals: each login sees only its own records', async () => {
@@ -122,4 +123,20 @@ test('import is safe to repeat', async () => {
   assert.deepEqual((await call(cookie, 'POST', 'e/inquiries/import', { rows })).json, { added: 0, skipped: 1 });
   const got = (await call(cookie, 'GET', 'e/inquiries', {}, { q: 'old person' })).json.rows[0];
   assert.equal(got.status, 'archived'); assert.equal(got.created_at, '2026-01-02T03:04:05Z');
+});
+
+test('services page list: default, then the admin list; worker documents by record', async () => {
+  const { default: svc } = await import('../api/services.js');
+  const run = async () => { let out; await svc({}, { setHeader() {}, status: () => ({ json: (o) => { out = o; } }) }); return out.services; };
+  assert.equal((await run()).length, 6);
+  await call(cookie, 'POST', 'e/services', { data: { name: 'Gardeners', price: '$200', order: 1 }, status: 'published' });
+  await call(cookie, 'POST', 'e/services', { data: { name: 'Hidden one' }, status: 'hidden' });
+  const list = await run();
+  assert.deepEqual(list.map((x) => x.name), ['Gardeners']);
+  const w = (await call(cookie, 'GET', 'e/workers', {}, { q: 'rani' })).json.rows[0].id;
+  await call(cookie, 'POST', 'e/documents', { data: { name: 'Passport copy', worker_id: w } });
+  await call(cookie, 'POST', 'e/documents', { data: { name: 'Someone else', owner: 'Rani' } });
+  await query('DELETE FROM login_attempts'); // the sign-in limit is per minute
+  const rani = await signIn('rani@b.mv', 'passw0rd!!');
+  assert.deepEqual((await call(rani, 'GET', 'portal/home')).json.documents.map((d) => d.name), ['Passport copy']);
 });

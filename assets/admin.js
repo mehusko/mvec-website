@@ -81,7 +81,8 @@
   // ---------- Shell ----------
   const can = (p) => meta.user.permissions.includes('*') || meta.user.permissions.includes(p);
   function shell(content, title) {
-    const nav = h('div', { class: 'side' }, h('h2', {}, 'MVEC Admin'), h('a', { class: route === 'home' ? 'on' : '', onclick: () => go('home') }, 'Dashboard'));
+    const nav = h('div', { class: 'side' }, h('h2', {}, 'MVEC Admin'), h('button', { class: 'menu-btn', onclick: () => nav.classList.toggle('open') }, '☰ Menu'));
+    const links0 = h('div', { class: 'links' }, h('a', { class: route === 'home' ? 'on' : '', onclick: () => go('home') }, 'Dashboard')); nav.append(links0);
     for (const g of meta.groups) {
       const items = Object.entries(meta.entities).filter(([, e]) => e.group === g);
       const extra = [];
@@ -97,9 +98,9 @@
         ...extra.map(([k, l]) => h('a', { class: route === k ? 'on' : '', onclick: () => go(k) }, l)));
       if (open[g] === undefined) open[g] = true;
       links.style.display = open[g] ? '' : 'none';
-      nav.append(h('div', { class: 'grp' }, h('button', { onclick: () => { open[g] = !open[g]; links.style.display = open[g] ? '' : 'none'; } }, g), links));
+      links0.append(h('div', { class: 'grp' }, h('button', { onclick: () => { open[g] = !open[g]; links.style.display = open[g] ? '' : 'none'; } }, g), links));
     }
-    nav.append(h('div', { class: 'grp' }, h('a', { onclick: changePassword }, 'Change my password'),
+    links0.append(h('div', { class: 'grp' }, h('a', { onclick: changePassword }, 'Change my password'),
       h('a', { onclick: async () => { await api('POST', 'auth/logout', {}); meta = null; loginScreen(); } }, `Sign out (${meta.user.name || meta.user.email})`)));
     app.replaceChildren(h('div', { class: 'layout' }, nav, h('div', { class: 'main' }, h('div', { class: 'bar' }, h('h1', {}, title)), content)));
   }
@@ -308,8 +309,9 @@
       },
     };
     const draw2 = () => {
-      const nav = h('div', { class: 'side' }, h('h2', {}, 'MVEC Portal'), ...tabs.map((t) => h('a', { class: t === tab ? 'on' : '', onclick: () => { tab = t; draw2(); } }, t)),
-        h('div', { class: 'grp' }, h('a', { onclick: async () => { await api('POST', 'auth/logout', {}); meta = null; loginScreen(); } }, `Sign out (${d.profile.name || meta.user.email})`)));
+      const nav = h('div', { class: 'side' }, h('h2', {}, 'MVEC Portal'), h('button', { class: 'menu-btn', onclick: () => nav.classList.toggle('open') }, '☰ ' + tab));
+      nav.append(h('div', { class: 'links' }, ...tabs.map((t) => h('a', { class: t === tab ? 'on' : '', onclick: () => { tab = t; draw2(); } }, t)),
+        h('div', { class: 'grp' }, h('a', { onclick: async () => { await api('POST', 'auth/logout', {}); meta = null; loginScreen(); } }, `Sign out (${d.profile.name || meta.user.email})`))));
       app.replaceChildren(h('div', { class: 'layout' }, nav, h('div', { class: 'main' }, h('div', { class: 'bar' }, h('h1', {}, tab)), views[tab]())));
     };
     draw2();

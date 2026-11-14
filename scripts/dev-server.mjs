@@ -20,6 +20,7 @@ http.createServer(async (req, res) => {
     res.send = (s) => res.end(s);
     return admin(req, res);
   }
+  if (u.pathname === '/api/services') { const { default: sv } = await import('../api/services.js'); res.status = (n) => { res.statusCode = n; return res; }; res.json = (o) => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(o)); }; return sv(req, res); }
   let f = path.join(root, u.pathname === '/' ? 'index.html' : u.pathname);
   if (!path.extname(f)) f += '.html';
   if (!f.startsWith(root) || !fs.existsSync(f)) { res.statusCode = 404; return res.end('not found'); }
