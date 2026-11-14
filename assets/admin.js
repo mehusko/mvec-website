@@ -28,9 +28,9 @@
 
   // ---------- Sign in ----------
   async function loginScreen() {
-    let needsSetup = false;
-    try { needsSetup = (await api('GET', 'auth/status')).needsSetup; } catch { /* ignore */ }
-    if (needsSetup) return setupScreen();
+    let needsSetup = false; let canReset = false;
+    try { const st = await api('GET', 'auth/status'); needsSetup = st.needsSetup; canReset = st.canReset; } catch { /* ignore */ }
+    if (needsSetup || canReset) return setupScreen(canReset && !needsSetup);
     const box = h('div'); const form = h('div');
     const email = h('input', { type: 'email', autocomplete: 'username' }); const pw = h('input', { type: 'password', autocomplete: 'current-password' });
     const go = h('button', { class: 'btn', onclick: async () => {
@@ -67,13 +67,13 @@
     }
   }
 
-  function setupScreen() {
+  function setupScreen(reset) {
     const box = h('div'); const key = h('input', { type: 'password' }); const name = h('input'); const email = h('input', { type: 'email' }); const pw = h('input', { type: 'password' });
     const go = h('button', { class: 'btn', onclick: async () => {
-      try { await api('POST', 'auth/setup', { name: name.value, email: email.value, password: pw.value }, { 'x-setup-key': key.value }); loginScreen(); }
+      try { await api('POST', 'auth/setup', { name: name.value, email: email.value, password: pw.value, reset: reset || undefined }, { 'x-setup-key': key.value }); loginScreen(); }
       catch (e) { say(box, e.message, true); }
     } }, 'Create administrator');
-    app.replaceChildren(h('div', { class: 'login' }, h('h1', {}, 'First-time setup'), h('p', { style: 'color:#5b6578' }, 'Create the first administrator. You need the one-time setup key.'), box,
+    app.replaceChildren(h('div', { class: 'login' }, h('h1', {}, reset ? 'Reset administrator' : 'First-time setup'), h('p', { style: 'color:#5b6578' }, reset ? 'This removes the existing staff accounts and creates a new administrator. You need the setup key.' : 'Create the first administrator. You need the one-time setup key.'), box,
       h('label', {}, 'Setup key'), key, h('label', {}, 'Your name'), name, h('label', {}, 'Email'), email, h('label', {}, 'Password (8 or more characters)'), pw, h('p', {}, go)));
   }
 
