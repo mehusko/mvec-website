@@ -140,3 +140,24 @@ test('services page list: default, then the admin list; worker documents by reco
   const rani = await signIn('rani@b.mv', 'passw0rd!!');
   assert.deepEqual((await call(rani, 'GET', 'portal/home')).json.documents.map((d) => d.name), ['Passport copy']);
 });
+
+test('social post is sent to Buffer (mocked) and result recorded', async () => {
+  process.env.BUFFER_API_KEY = 'test-key';
+  const real = globalThis.fetch; const calls = [];
+  globalThis.fetch = async (url, o) => {
+    const b = JSON.parse(o.body); calls.push({ url, auth: o.headers.authorization, b });
+    if (b.query.includes('channels')) return new Response(JSON.stringify({ data: { account: { organizations: [{ id: 'o1', channels: [{ id: 'c1', name: 'MVEC FB', service: 'facebook' }] }] } } }));
+    return new Response(JSON.stringify({ data: { createPost: { post: { id: 'p1' } } } }));
+  };
+  try {
+    const ch = await call(cookie, 'GET', 'social/channels');
+    assert.equal(ch.json.channels[0].id, 'c1');
+    const c = (await call(cookie, 'POST', 'e/social', { data: { text: 'Hello', channels: 'c1' } })).json;
+    const r = await call(cookie, 'POST', `e/social/${c.id}/publish`, {});
+    assert.equal(r.json.status, 'posted');
+    const post = calls.find((x) => x.b.query.includes('createPost'));
+    assert.equal(post.auth, 'Bearer test-key'); assert.equal(post.b.variables.input.channelId, 'c1');
+    const empty = (await call(cookie, 'POST', 'e/social', { data: { text: 'x' } })).json;
+    assert.equal((await call(cookie, 'POST', `e/social/${empty.id}/publish`, {})).err, 400);
+  } finally { globalThis.fetch = real; delete process.env.BUFFER_API_KEY; }
+});

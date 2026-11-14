@@ -184,7 +184,13 @@
     const steps = def.tracker && h('div', { class: 'steps' }, ...meta.tracker.map(([k, l]) => h('span', { class: 'step' + (row.data[k] ? ' done' : '') }, row.data[k] ? `${l}: ${row.data[k]}` : l)));
     const status = def.canManage && h('select', { onchange: async (e) => { try { await api('POST', `e/${key}/${id}/status`, { status: e.target.value }); say(msg, 'Status updated.'); } catch (x) { say(msg, x.message, true); } } },
       ...def.statuses.map((s) => h('option', { value: s, selected: s === row.status }, nice(s))));
-    const acts = h('div', { class: 'bar' }, h('button', { class: 'btn ghost', onclick: back }, 'Back'), status,
+    const publish = key === 'social' && def.canManage && row.status !== 'posted' && h('button', { class: 'btn', onclick: async (e) => {
+      if (!confirm('Send this post to Buffer now? It will be scheduled or posted on the chosen channels.')) return;
+      e.target.disabled = true;
+      try { const r = await api('POST', `e/${key}/${id}/publish`, {}); say(msg, r.result, Boolean(r.failed)); setTimeout(() => detail(box, key, id), 1500); }
+      catch (x) { say(msg, x.message, true); e.target.disabled = false; }
+    } }, 'Send to Buffer');
+    const acts = h('div', { class: 'bar' }, h('button', { class: 'btn ghost', onclick: back }, 'Back'), status, publish,
       def.canManage && h('button', { class: 'btn', onclick: () => form(box, key, row) }, 'Edit'),
       def.canManage && h('button', { class: 'btn red', onclick: async () => { if (confirm('Move this to Deleted items? You can restore it later.')) { await api('DELETE', `e/${key}/${id}`); back(); } } }, 'Delete'));
     box.replaceChildren(acts, msg, h('div', { class: 'card' }, steps, dl, h('p', { style: 'color:#5b6578;font-size:12px' }, `Received ${dt(row.created_at)} · Last changed ${dt(row.updated_at)}`)));
@@ -195,13 +201,26 @@
     const refs = {};
     for (const f of def.fields) if (f.type === 'ref') refs[f.key] = (await api('GET', `e/${f.ref}?page=1`)).rows;
     const inputs = {};
+    let chans = null;
+    if (key === 'social') { try { chans = await api('GET', 'social/channels'); } catch { chans = null; } }
     const fields = def.fields.filter((f) => !f.computed).map((f) => {
+      if (key === 'social' && f.key === 'channels') {
+        const chosen = String((row && row.data.channels) || '').split(',').map((x) => x.trim()).filter(Boolean);
+        const box2 = h('div', {});
+        const list = (chans && chans.channels) || [];
+        if (!chans || !chans.connected) box2.append(h('p', { style: 'color:#5b6578;font-size:13px' }, 'Buffer is not connected yet. Add the BUFFER_API_KEY in Vercel (see ADMIN-SETUP.md), then channels will appear here.'));
+        else if (chans.error) box2.append(h('p', { style: 'color:#b42318;font-size:13px' }, chans.error));
+        else if (!list.length) box2.append(h('p', { style: 'font-size:13px' }, 'No channels found in Buffer.'));
+        const boxes = list.map((c) => { const cb = h('input', { type: 'checkbox', value: c.id }); cb.checked = chosen.includes(c.id); box2.append(h('label', { style: 'display:block;font-weight:normal' }, cb, ` ${c.name} (${c.service})`)); return cb; });
+        inputs.channels = { get value() { return boxes.filter((b) => b.checked).map((b) => b.value).join(','); } };
+        return h('div', { class: 'full' }, h('label', {}, f.label), box2);
+      }
       const v = row ? row.data[f.key] : undefined; let inp;
       if (f.type === 'textarea') inp = h('textarea', { rows: 3 });
       else if (f.type === 'select') inp = h('select', {}, h('option', { value: '' }, ''), ...f.options.map((o) => h('option', { value: o }, o)));
       else if (f.type === 'checkbox') inp = h('input', { type: 'checkbox' });
       else if (f.type === 'ref') inp = h('select', {}, h('option', { value: '' }, '— none —'), ...refs[f.key].map((r) => h('option', { value: r.id }, r.data.name || r.data.title || r.id)));
-      else inp = h('input', { type: ({ number: 'number', money: 'number', date: 'date', email: 'email', tel: 'tel', url: 'url' })[f.type] || 'text', step: f.type === 'money' ? '0.01' : undefined });
+      else inp = h('input', { type: ({ number: 'number', money: 'number', date: 'date', datetime: 'datetime-local', email: 'email', tel: 'tel', url: 'url' })[f.type] || 'text', step: f.type === 'money' ? '0.01' : undefined });
       if (f.type === 'checkbox') inp.checked = Boolean(v); else if (v !== undefined) inp.value = v;
       inputs[f.key] = inp;
       return h('div', { class: f.type === 'textarea' ? 'full' : '' }, h('label', {}, f.label + (f.required ? ' *' : '')), inp);

@@ -14,3 +14,10 @@ The admin lives at `/admin` on the site. It needs a database and three secrets.
 Public forms (contact, register, apply) now also save into the admin. If the database is down, the forms still work and still send to Telegram.
 
 Local test: `node scripts/dev-server.mjs` (uses a throw-away SQLite file). Tests: `node --test test/auth.test.js test/admin.test.js`.
+
+## Social posting (Buffer)
+
+1. In Buffer open publish.buffer.com/settings/api and press "Generate API key". Copy it (shown once).
+2. In Vercel → project → Settings → Environment Variables add `BUFFER_API_KEY` with that key (Preview and Production). Redeploy.
+3. In the admin: Social posts → New. Pick channels (they load from Buffer), write the text, optionally an image link and a date/time (Maldives time). Open the post and press **Send to Buffer**.
+   Empty date = next free slot in your Buffer queue. The result shows on the post; status becomes Posted / Scheduled / Failed.
