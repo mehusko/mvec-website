@@ -13,8 +13,8 @@
     for (const kid of kids.flat()) if (kid != null && kid !== false) el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
     return el;
   };
-  const api = async (method, path, body) => {
-    const r = await fetch('/api/admin/' + path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin' });
+  const api = async (method, path, body, extra) => {
+    const r = await fetch('/api/admin/' + path, { method, headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(extra || {}) }, body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin' });
     const t = await r.text(); let j = {}; try { j = JSON.parse(t); } catch { /* csv */ }
     if (!r.ok) { const e = new Error(j.error || 'Error'); e.status = r.status; throw e; }
     return path.includes('format=csv') ? t : j;
@@ -27,7 +27,10 @@
     : ['lost', 'rejected', 'cancelled', 'void', 'failed', 'absent', 'overdue', 'closed', 'hidden'].includes(s) ? 'bad' : ['new', 'draft', 'sent', 'late', 'scheduled', 'planned'].includes(s) ? 'warn' : '');
 
   // ---------- Sign in ----------
-  function loginScreen() {
+  async function loginScreen() {
+    let needsSetup = false;
+    try { needsSetup = (await api('GET', 'auth/status')).needsSetup; } catch { /* ignore */ }
+    if (needsSetup) return setupScreen();
     const box = h('div'); const form = h('div');
     const email = h('input', { type: 'email', autocomplete: 'username' }); const pw = h('input', { type: 'password', autocomplete: 'current-password' });
     const go = h('button', { class: 'btn', onclick: async () => {
@@ -62,6 +65,16 @@
         h('p', {}, 'If you lose your phone, each of these codes can be used once instead of the 6-digit code. Write them down and keep them safe. They will not be shown again.'),
         h('code', { class: 'sec' }, codes.join('   ')), h('p', {}, h('button', { class: 'btn', onclick: start }, 'I saved them, continue'))));
     }
+  }
+
+  function setupScreen() {
+    const box = h('div'); const key = h('input', { type: 'password' }); const name = h('input'); const email = h('input', { type: 'email' }); const pw = h('input', { type: 'password' });
+    const go = h('button', { class: 'btn', onclick: async () => {
+      try { await api('POST', 'auth/setup', { name: name.value, email: email.value, password: pw.value }, { 'x-setup-key': key.value }); loginScreen(); }
+      catch (e) { say(box, e.message, true); }
+    } }, 'Create administrator');
+    app.replaceChildren(h('div', { class: 'login' }, h('h1', {}, 'First-time setup'), h('p', { style: 'color:#5b6578' }, 'Create the first administrator. You need the one-time setup key.'), box,
+      h('label', {}, 'Setup key'), key, h('label', {}, 'Your name'), name, h('label', {}, 'Email'), email, h('label', {}, 'Password (8 or more characters)'), pw, h('p', {}, go)));
   }
 
   // ---------- Shell ----------
