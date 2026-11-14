@@ -2,6 +2,7 @@
 //   1) {action:"start", ...company details}  -> sends a summary to Telegram, returns a reference
 //   2) {action:"file", ref, label, file:{name,type,data}} -> sends one document to Telegram (one request per file)
 import { clip, esc, isEmail, readBody, sendDocument, sendMessage } from '../lib/telegram.js';
+import { saveFormRecord } from '../lib/admin.js';
 import { normalizePhone, otpEnabled, verifyCode } from '../lib/otp.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -83,6 +84,7 @@ export default async function handler(req, res) {
     const typeLabel = f.qtype === 'other' ? `Other: ${f.qother}` : (type ? type.label : f.qtype);
     const checklist = type ? [...(cfg.common || []), ...(type.docs || [])] : (cfg.common || []);
     const ref = newRef();
+    await saveFormRecord('quota', { ...f, ref }); // admin copy; never blocks the form
     const line = (label, v) => (v ? `<b>${label}:</b> ${esc(v)}` : null);
     const text = [
       `<b>🏢 New quota application</b>  <code>${ref}</code>`,
