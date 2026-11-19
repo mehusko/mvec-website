@@ -27,7 +27,9 @@ function readToken(token) {
 // Sign-in is required only once a phone-code sender is set up. Until then guests can chat,
 // with a small per-visitor limit (per server instance) to keep costs safe.
 const enabled = () => aiReady();
-const signinRequired = () => otpEnabled();
+// CHAT_PHONE_ONLY=on: ask for a phone number but send no code (numbers are not verified).
+const phoneOnly = () => String(process.env.CHAT_PHONE_ONLY || '').toLowerCase() === 'on';
+const signinRequired = () => phoneOnly() || otpEnabled();
 const GUEST_LIMIT = 15, GUEST_WINDOW_MS = 60 * 60 * 1000;
 const guestHits = new Map();
 function guestAllowed(req) {
@@ -41,7 +43,7 @@ function guestAllowed(req) {
 }
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') return res.status(200).json({ enabled: enabled(), signin: signinRequired(), channels: channels() });
+  if (req.method === 'GET') return res.status(200).json({ enabled: enabled(), signin: signinRequired(), phoneOnly: phoneOnly(), channels: channels() });
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'Method not allowed' });
@@ -52,19 +54,18 @@ export default async function handler(req, res) {
   if (body.action === 'login') {
     const phone = normalizePhone(clip(body.phone, 40));
     if (!phone) return res.status(400).json({ error: 'Please enter a valid phone number.' });
-    if (!(await verifyCode(phone, clip(body.code, 10), body.exp, clip(body.sig, 300)))) {
+    if (!phoneOnly() && !(await verifyCode(phone, clip(body.code, 10), body.exp, clip(body.sig, 300)))) {
       return res.status(400).json({ error: 'That code is wrong or has expired. Please try again.' });
     }
-    try { await sendMessage(`<b>💬 Website chat sign-in</b>\nPhone: +${esc(phone)}`); } catch (e) { console.error('Chat notify:', e.message); }
+    try { await sendMessage(`<b>💬 Website chat sign-in</b>\nPhone: +${esc(phone)}${phoneOnly() ? ' (not verified)' : ''}`); } catch (e) { console.error('Chat notify:', e.message); }
     return res.status(200).json({ token: makeToken(phone), phone });
   }
 
   if (body.action === 'ask') {
     let phone = readToken(body.token);
     if (!phone && signinRequired()) return res.status(401).json({ error: 'Please sign in again.', signin: true });
-    if (!phone) {
+    if (!phone || phoneOnly()) {
       if (!guestAllowed(req)) return res.status(429).json({ error: 'You have sent a lot of questions. Please WhatsApp us on +960 763 7762 and a colleague will help.' });
-      phone = null;
     }
     const history = cleanHistory(body.messages);
     if (!history.length) return res.status(400).json({ error: 'Please type a question.' });

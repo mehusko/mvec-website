@@ -6,7 +6,7 @@
   function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
   var state = load(); // { token, phone, messages: [] }
   state.messages = state.messages || [];
-  var channels = [], otp = null, signin = true;
+  var channels = [], otp = null, signin = true, phoneOnly = false;
 
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; }
   async function post(data) {
@@ -20,6 +20,7 @@
     if (!d || !d.enabled) return;
     channels = d.channels || [];
     signin = d.signin !== false;
+    phoneOnly = !!d.phoneOnly;
     build();
   }).catch(function () {});
 
@@ -48,10 +49,10 @@
   }
 
   function signInView(body) {
-    body.appendChild(el('p', 'chat-note', 'Sign in with your phone number to chat. We will send you a code' + (channels.length === 1 && channels[0] === 'whatsapp' ? ' on WhatsApp.' : '.')));
+    body.appendChild(el('p', 'chat-note', phoneOnly ? 'Enter your phone number to start chatting with us.' : 'Sign in with your phone number to chat. We will send you a code' + (channels.length === 1 && channels[0] === 'whatsapp' ? ' on WhatsApp.' : '.')));
     var form = el('form', 'chat-form-col');
     var phone = el('input'); phone.type = 'tel'; phone.placeholder = '+960 XXX XXXX'; phone.required = true; phone.autocomplete = 'tel'; phone.maxLength = 40;
-    var send = el('button', 'btn btn-small', 'Send code'); send.type = 'submit';
+    var send = el('button', 'btn btn-small', phoneOnly ? 'Start chat' : 'Send code'); send.type = 'submit';
     var code = el('input'); code.placeholder = 'Enter the code'; code.autocomplete = 'one-time-code'; code.maxLength = 10; code.hidden = true;
     var msg = el('p', 'chat-msg');
     form.appendChild(phone); form.appendChild(code); form.appendChild(send); form.appendChild(msg);
@@ -60,7 +61,11 @@
       e.preventDefault();
       msg.textContent = ''; send.disabled = true;
       try {
-        if (!otp) {
+        if (phoneOnly) {
+          var out0 = await post({ action: 'login', phone: phone.value });
+          state = { token: out0.token, phone: out0.phone, messages: [] };
+          save(state); render(body);
+        } else if (!otp) {
           var ch = channels.indexOf('whatsapp') >= 0 ? 'whatsapp' : channels[0];
           var r = await fetch('/api/otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: phone.value, channel: ch }) });
           var d = await r.json();
