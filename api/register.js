@@ -4,6 +4,7 @@ import { clip, esc, isEmail, readBody, sendDocument, sendMessage } from '../lib/
 import { readUpload } from '../lib/files.js';
 import { saveRecord } from '../lib/records.js';
 import { saveFormRecord } from '../lib/admin.js';
+import { checkFormCode, formCodesOn } from '../lib/otp.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -32,6 +33,7 @@ export default async function handler(req, res) {
   if (!f.name || !f.phone || (f.dob && !/^\d{4}-\d{2}-\d{2}$/.test(f.dob)) || (f.email && !isEmail(f.email))) {
     return res.status(400).json({ error: 'Please fill in your name and phone number.' });
   }
+  { const bad = await checkFormCode(body); if (bad) return res.status(400).json({ error: bad, needsCode: true }); }
   if (!body.consent) return res.status(400).json({ error: 'Please tick the box to agree.' });
 
   const up = readUpload(body.cv, 'profile');
@@ -63,7 +65,7 @@ export default async function handler(req, res) {
   ].filter((l) => l !== null).join('\n');
 
   await saveFormRecord('applications', f);
-  await saveRecord('registration', { ...f, file: file ? file.name : '' });
+  await saveRecord('registration', { ...f, verified: formCodesOn() ? 'yes' : '', file: file ? file.name : '' });
 
   try {
     if (file && text.length <= 1000) await sendDocument(file.buffer, file.name, file.mime, text);

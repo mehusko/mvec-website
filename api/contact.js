@@ -1,6 +1,8 @@
 // Website inquiries (contact form and worker requests) go to the MVEC Telegram chat.
 import { clip, esc, isEmail, readBody, sendMessage } from '../lib/telegram.js';
 import { saveFormRecord } from '../lib/admin.js';
+import { checkFormCode, formCodesOn } from '../lib/otp.js';
+import { saveRecord } from '../lib/records.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -26,6 +28,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Please fill in all required fields.' });
   }
 
+  const bad = await checkFormCode(body);
+  if (bad) return res.status(400).json({ error: bad, needsCode: true });
+
   const line = (label, v) => (v ? `<b>${label}:</b> ${esc(v)}` : null);
   const text = [
     isWorkerRequest ? '<b>👷 New worker request</b>' : '<b>📩 New website inquiry</b>',
@@ -33,7 +38,7 @@ export default async function handler(req, res) {
     line('Name', f.name),
     line('Company', f.company),
     line('Email', f.email),
-    line('Phone', f.phone),
+    line('Phone', f.phone + (formCodesOn() ? ' ✅ verified' : '')),
     line('Worker', f.worker),
     line('How many', f.count),
     line('Service', f.service),
@@ -45,6 +50,9 @@ export default async function handler(req, res) {
   await saveFormRecord('inquiries', f); // admin panel copy; never blocks the form
 
   try {
+    await saveRecord(isWorkerRequest ? 'worker request' : 'inquiry', {
+      name: f.name, phone: f.phone, email: f.email, message: f.message || f.worker, verified: formCodesOn() ? 'yes' : '',
+    });
     await sendMessage(text);
     return res.status(200).json({ ok: true });
   } catch (err) {

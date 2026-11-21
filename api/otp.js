@@ -1,10 +1,10 @@
 // GET  -> { enabled }               whether phone verification is switched on
 // POST { phone, channel } -> { exp, sig }   sends a 6-digit code by WhatsApp or Viber
 import { clip, readBody } from '../lib/telegram.js';
-import { channels, issueCode, normalizePhone, otpEnabled } from '../lib/otp.js';
+import { channels, formCodesOn, issueCode, normalizePhone, otpEnabled } from '../lib/otp.js';
 
 export default async function handler(req, res) {
-  if (req.method === 'GET') return res.status(200).json({ enabled: otpEnabled(), channels: channels() });
+  if (req.method === 'GET') return res.status(200).json({ enabled: otpEnabled(), channels: channels(), forms: formCodesOn() });
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'Method not allowed' });

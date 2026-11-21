@@ -3,6 +3,7 @@ import { clip, esc, isEmail, readBody, sendDocument, sendMessage } from '../lib/
 import { readUpload } from '../lib/files.js';
 import { saveRecord } from '../lib/records.js';
 import { saveFormRecord } from '../lib/admin.js';
+import { checkFormCode, formCodesOn } from '../lib/otp.js';
 
 
 export default async function handler(req, res) {
@@ -27,6 +28,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Please fill in all required fields.' });
   }
 
+  const bad = await checkFormCode(body);
+  if (bad) return res.status(400).json({ error: bad, needsCode: true });
+
   const up = readUpload(body.cv);
   if (up.error) return res.status(400).json({ error: up.error });
   const cv = up.file;
@@ -49,7 +53,7 @@ export default async function handler(req, res) {
   ].filter((l) => l !== null).join('\n');
 
   await saveFormRecord('applications', { ...f, country: f.nationality, notes: f.message });
-  await saveRecord('application', { ...f, file: cv ? cv.name : '' });
+  await saveRecord('application', { ...f, verified: formCodesOn() ? 'yes' : '', file: cv ? cv.name : '' });
 
   try {
     if (cv && text.length <= 1000) await sendDocument(cv.buffer, cv.name, cv.mime, text);

@@ -32,7 +32,11 @@
     });
   }
 
+  // Phone codes on forms: only when the server says they are switched on (GET /api/otp -> forms).
+  var otpCfg = fetch('/api/otp').then(function (r) { return r.json(); }).catch(function () { return {}; });
+
   document.querySelectorAll('form[data-endpoint]').forEach(function (form) {
+    var otp = null; // { phone, exp, sig } once a code has been sent
     var status = form.querySelector('.form-status');
     var btn = form.querySelector('button[type=submit]');
     var label = btn.textContent;
@@ -55,6 +59,41 @@
         data.cv = { name: file.name, type: file.type, data: await readFile(file) };
       }
 
+      var cfg = await otpCfg;
+      if (cfg && cfg.forms && data.phone) {
+        var codeInput = form.querySelector('[name=otp_code]');
+        if (!otp || otp.phone !== data.phone || !codeInput || !codeInput.value.trim()) {
+          btn.disabled = true; btn.textContent = 'Sending code…';
+          try {
+            var r = await fetch('/api/otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: data.phone }) });
+            var d = {};
+            try { d = await r.json(); } catch (_) {}
+            if (!r.ok) throw new Error(d.error || 'Could not send the code.');
+            otp = { phone: data.phone, exp: d.exp, sig: d.sig };
+            if (!codeInput) {
+              var wrap = document.createElement('label');
+              wrap.appendChild(document.createTextNode('Code we sent to your phone *'));
+              codeInput = document.createElement('input');
+              codeInput.name = 'otp_code'; codeInput.type = 'text'; codeInput.inputMode = 'numeric';
+              codeInput.autocomplete = 'one-time-code'; codeInput.maxLength = 10; codeInput.required = true;
+              wrap.appendChild(codeInput);
+              btn.parentNode.insertBefore(wrap, btn);
+            }
+            codeInput.value = '';
+            codeInput.focus();
+            status.textContent = 'We sent a code to your phone. Enter it above, then press the button again.';
+            status.classList.add('ok');
+          } catch (err) {
+            status.textContent = (err.message || 'Could not send the code.') + ' You can also WhatsApp us on +960 763 7762.';
+            status.classList.add('err');
+          } finally {
+            btn.disabled = false; btn.textContent = label;
+          }
+          return;
+        }
+        data.otp_code = codeInput.value.trim(); data.otp_exp = otp.exp; data.otp_sig = otp.sig;
+      }
+
       btn.disabled = true; btn.textContent = 'Sending…';
       try {
         var res = await fetch(form.dataset.endpoint, {
@@ -66,6 +105,9 @@
         try { out = await res.json(); } catch (_) {}
         if (!res.ok) throw new Error(out.error || '');
         form.reset();
+        otp = null;
+        var extra = form.querySelector('[name=otp_code]');
+        if (extra) extra.closest('label').remove();
         status.textContent = form.dataset.success || "Thank you! We'll get back to you within 24 hours.";
         status.classList.add('ok');
         if (window.va) window.va('event', { name: 'form_submit', data: { form: form.id } });
